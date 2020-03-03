@@ -52,7 +52,7 @@ class LCG:
 
 
 if __name__ == "__main__":
-    sjf = SJF()
+    # sjf = SJF()
     exit(0)
     if len(sys.argv) < 8:
         print("ERROR: insufficient arguments", file=sys.stderr, end="")
