@@ -1,4 +1,10 @@
-import sys
+"""
+Shortest remaining time
+    
+Author
+    Zhihao Deng (dengz5@rpi.edu)
+
+"""
 
 
 class SRT:

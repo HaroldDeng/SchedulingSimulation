@@ -1,3 +1,12 @@
+"""
+Shortest job first
+    
+Author
+    Zhihao Deng (dengz5@rpi.edu)
+
+"""
+
+
 import sys
 
 
