@@ -16,39 +16,11 @@ Last modifly
 
 import sys
 import math
+from util import LCG
 from FCFS import *
 from SJF import *
 from SRT import *
 from RR import *
-
-
-class Process:
-    def __init__(self, name: str):
-        self.name = name
-        self.arrival_time = 0  # process arrival time, in MILLISECONDS
-
-        # use setattr(object, name, value)
-
-        
-"""
-Linear congruential generator, generate random numbers
-
-Algorithm is inherited from POSIX
-"""
-
-
-class LCG:
-    def __init__(self):
-        self.seed = 0
-
-    # initialize seed, detail implementation see man srand48
-    def srand48(self, seedval: int):
-        self.seed = ((seedval & 0xFFFFFFFF) << 16) | 0x330E
-
-    # get random number, detail implementation see man drand48
-    def drand48(self) -> float:
-        self.seed = (0x5DEECE66D * self.seed + 0xB) & 0xffffffffffff
-        return float(self.seed / 0x1000000000000)
 
 
 if __name__ == "__main__":
@@ -92,9 +64,13 @@ if __name__ == "__main__":
         p.arrival_time = math.floor(-math.log(lcg.drand48()) / lambda_)
         while (p.arrival_time > bound):
             p.arrival_time = math.floor(-math.log(lcg.drand48()) / lambda_)
+        
+        p.action_exit = p.arrival_time
+        p.action = Action.new
 
         procsList.append(p)
     
-    print(procsList[0].arrival_time)
+    queue = ProcessQueue(procsList)
+    queue.__str__()
 
     # start simulation

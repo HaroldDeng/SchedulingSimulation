@@ -6,7 +6,7 @@ CPU scheduling simulation for spring 2020 CSCI-4210
 # Git command
 - download file from repository
   - "git clone https://github.com/HaroldDeng/SchedulingSimulation.git"
-- save changes to index file
+- save changes to index file (for file creation or deletion)
   - "git add ."
 - write your commit message, commit message can't be empty
   - "git commit"
