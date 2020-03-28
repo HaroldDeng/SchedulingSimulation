@@ -1,5 +1,5 @@
 import sys
-from util import Action, Process, ProcessQueue
+from util import Action, Process
 
 class RR:
     def __init__(self):

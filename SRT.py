@@ -9,9 +9,57 @@ Author
 
 """
 import sys
-from util import Action, Process, ProcessQueue
+from util import Action, Process
+
 
 class SRT:
-    def __init__(self):
-        print("function not implemented")
-        sys.exit(1)
+    def __init__(self, processes: [Process]):
+        self.endedQueue = []          # processes in terminated state
+        self.readyQueue = []           # processes in ready state
+        self.actionQueue = processes  # processes in state other than ready and terminated
+        self.clock = 0                # in ms
+
+    def resume(self, pros: Process) -> Process:
+        if pros.action == Action.new:
+            pros.action = Action.ready
+            self.readyQueue.append(pros)
+        elif pros.action == Action.ready:
+            pros.action = Action.running
+            self.actionQueue.append(pros)
+        elif pros.action == Action.running:
+            if pros.index == len(pros.burst_time) - 1:
+                pros.action = Action.terninated
+                self.endedQueue.append(pros)
+            else:
+                pros.action = Action.blocked
+                self.actionQueue.append(pros)
+        elif pros.action == Action.blocked:
+            self.action = Action.ready
+            self.readyQueue.append(pros)
+        elif pros.action == Action.preempted:
+            pros.action = Action.ready
+            self.readyQueue.append(pros)
+        else:
+            # error
+            pass
+
+        pros.action_start = self.clock
+        return self.actionQueue.pop(0)
+
+    def _sort(self):
+
+        # (a) CPU burst completion
+        # (b) I/O burst completion(i.e., back to the ready queue)
+        # (c) new process arrival
+        # If ties still happens, break tie with ID order
+        def __compare(proc: Process):
+            if proc.action == Action.running:
+                return proc.action_exit - 0.99 + float(ord(proc.name[0]) - 65) / 100.0
+            elif proc.action == Action.blocked:
+                return proc.action_exit - 0.34 + float(ord(proc.name[0]) - 65) / 100.0
+            elif proc.action == Action.new:
+                return proc.action_exit - 0.67 + float(ord(proc.name[0]) - 65) / 100.0
+            elif proc.action == Action.ready:
+                return proc.action_exit
+
+        self.actionQueue.sort(key=__compare)

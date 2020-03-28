@@ -65,12 +65,37 @@ if __name__ == "__main__":
         while (p.arrival_time > bound):
             p.arrival_time = math.floor(-math.log(lcg.drand48()) / lambda_)
         
+        p.arrival_time *= 1000 # in ms
         p.action_exit = p.arrival_time
         p.action = Action.new
 
         procsList.append(p)
-    
-    queue = ProcessQueue(procsList)
-    queue.__str__()
+
+    # assign CPU burst and I/O block count
+    for p in procsList:
+        p.burst_time = [0] * int(lcg.drand48() * 100) + 1 # [1, 100]
+        p.block_time = [0] * (len(p.burst_time) - 1)
+
+    # assign CPU burst and I/O block time
+    for p in procsList:
+        for i in range(p.block_time):
+            # CPU burst
+            p.burst_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
+            while (p.burst_time[i] > bound):
+                p.burst_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
+
+            # I/O block
+            p.block_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
+            while (p.block_time[i] > bound):
+                p.block_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
+            
+            p.burst_time[i] *= 1000 # in ms
+            p.block_time[i] *= 1000
+        
+        # last CPU burst
+        p.burst_time[-1] = math.ceil(-math.log(lcg.drand48()) / lambda_)
+        while (p.burst_time[-1] > bound):
+            p.burst_time[-1] = math.ceil(-math.log(lcg.drand48()) / lambda_)
+        p.burst_time[-1] *= 1000
 
     # start simulation
