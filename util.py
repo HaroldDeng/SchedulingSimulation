@@ -31,6 +31,7 @@ class Process:
 
         self.wait_time = 0
         self.turnaround_time = 0
+        self.preempt_count = 0
 
         # use setattr(object, name, value) to add attribute with your needs
 
