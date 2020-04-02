@@ -8,18 +8,24 @@ Author
     Zhihao Deng (dengz5@rpi.edu)
 
 """
-import sys
+import sys, copy
 from util import Action, Process
 
 
 class SRT:
     def __init__(self, processes: [Process]):
         self.endedQueue = []          # processes in terminated state
-        self.readyQueue = []           # processes in ready state
-        self.actionQueue = processes  # processes in state other than ready and terminated
+        self.readyQueue = []          # processes in ready state
         self.clock = 0                # in ms
+        
+        # processes in state other than ready and terminated
+        self.actionQueue = copy.deepcopy(processes)
+    
+    def simulate(self):
+        pass
 
-    def resume(self, pros: Process) -> Process:
+    def resume(self, pros: Process) -> [Process, Process]:
+        retVal = [None, None]
         if pros.action == Action.new:
             pros.action = Action.ready
             self.readyQueue.append(pros)
@@ -27,24 +33,26 @@ class SRT:
             pros.action = Action.running
             self.actionQueue.append(pros)
         elif pros.action == Action.running:
-            if pros.index == len(pros.burst_time) - 1:
+            if pros.burst_index == len(pros.burst_time) - 1:
                 pros.action = Action.terninated
                 self.endedQueue.append(pros)
             else:
                 pros.action = Action.blocked
                 self.actionQueue.append(pros)
         elif pros.action == Action.blocked:
+            # premmpt check
             self.action = Action.ready
-            self.readyQueue.append(pros)
-        elif pros.action == Action.preempted:
-            pros.action = Action.ready
             self.readyQueue.append(pros)
         else:
             # error
             pass
 
-        pros.action_start = self.clock
-        return self.actionQueue.pop(0)
+        if len(self.actionQueue) > 0:
+            self._sort()
+            retVal[0] = self.actionQueue.pop(0)
+        return retVal
+
+
 
     def _sort(self):
 

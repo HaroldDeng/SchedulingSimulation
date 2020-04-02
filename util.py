@@ -1,12 +1,12 @@
 import enum
 
+
 class Action(enum.Enum):
     new = 0         # process have not arrive at CPU
     ready = 1       # ready to use CPU
     running = 2     # actively using CPU
-    preempted = 3   # being preempted
-    blocked = 4     # I/O time
-    terninated = 5  # process terninates
+    blocked = 3     # I/O time
+    terninated = 4  # process terninates
 
 
 class Process:
@@ -16,20 +16,24 @@ class Process:
 
         self.burst_time = []  # CPU burst time in MS
         self.block_time = []  # I/O block time in MS
-        self.index = 0        # current access point
+        self.burst_index = 0
+        self.block_index = 0
+        self.total_burst = 0  # sum(self.burst_time)
+        self.total_block = 0  # sum(self.block_time)
 
         # process current status
         self.action = Action.new
+        self.action_start = 0
         # time of the process finish current status in MILLISECONDS. If process
         #   enters CPU at x ms, and takes y ms CPU burst, action_exit will be
         #   x + y
         self.action_exit = 0
-        self.action_start = 0
 
         self.wait_time = 0
         self.turnaround_time = 0
 
         # use setattr(object, name, value) to add attribute with your needs
+
 
 """
 Linear congruential generator, generate random numbers
