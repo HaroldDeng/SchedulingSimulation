@@ -23,14 +23,12 @@ class Process:
 
         # process current status
         self.action = Action.new
-        self.action_start = 0
         # time of the process finish current status in MILLISECONDS. If process
         #   enters CPU at x ms, and takes y ms CPU burst, action_exit will be
         #   x + y
         self.action_exit = 0
 
         self.wait_time = 0
-        self.turnaround_time = 0
         self.preempt_count = 0
 
         # use setattr(object, name, value) to add attribute with your needs
