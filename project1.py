@@ -56,27 +56,28 @@ if __name__ == "__main__":
     lcg.srand48(seed)
 
     # create process
-    # !!! procs is shared amount all operation, DO NOT modify
-    procs = []
+    # !!! procsList is shared amount all operation, DO NOT modify the list
+    procsList = []
     for shift in range(procs):
         p = Process(chr(65 + shift))
 
         p.arrival_time = math.floor(-math.log(lcg.drand48()) / lambda_)
         while (p.arrival_time > bound):
             p.arrival_time = math.floor(-math.log(lcg.drand48()) / lambda_)
-
+        
         p.action_exit = p.arrival_time
         p.action = Action.new
+        p.tau = math.ceil(1/lambda_)
 
-        procs.append(p)
+        procsList.append(p)
 
     # assign CPU burst and I/O block count
-    for p in procs:
-        p.burst_time = [0] * (int(lcg.drand48() * 100) + 1)  # [1, 100]
+    for p in procsList:
+        p.burst_time = [0] * (int(lcg.drand48() * 100) + 1) # [1, 100]
         p.block_time = [0] * (len(p.burst_time) - 1)
 
     # assign CPU burst and I/O block time
-    for p in procs:
+    for p in procsList:
         for i in range(len(p.block_time)):
             # CPU burst
             p.burst_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
@@ -87,12 +88,12 @@ if __name__ == "__main__":
             p.block_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
             while (p.block_time[i] > bound):
                 p.block_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
-
+        
         # last CPU burst
         p.burst_time[-1] = math.ceil(-math.log(lcg.drand48()) / lambda_)
         while (p.burst_time[-1] > bound):
             p.burst_time[-1] = math.ceil(-math.log(lcg.drand48()) / lambda_)
 
     # start simulation
-    srt = SRT(procs, math.ceil(1/lambda_))
+    srt = SRT(procsList, alpha, t_cs)
     srt.simulate()

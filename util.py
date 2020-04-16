@@ -16,8 +16,7 @@ class Process:
 
         self.burst_time = []  # CPU burst time in MS
         self.block_time = []  # I/O block time in MS
-        self.burst_index = 0
-        self.block_index = 0
+        self.index = 0
         self.total_burst = 0  # sum(self.burst_time)
         self.total_block = 0  # sum(self.block_time)
 
@@ -30,6 +29,7 @@ class Process:
 
         self.wait_time = 0
         self.preempt_count = 0
+        self.tau = 0
 
         # use setattr(object, name, value) to add attribute with your needs
 
