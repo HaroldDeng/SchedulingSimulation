@@ -24,6 +24,7 @@ from RR import *
 
 
 if __name__ == "__main__":
+    # print("123")
     if len(sys.argv) < 8:
         print("ERROR: insufficient arguments", file=sys.stderr, end="")
         sys.exit(1)
@@ -64,20 +65,12 @@ if __name__ == "__main__":
         p.arrival_time = math.floor(-math.log(lcg.drand48()) / lambda_)
         while (p.arrival_time > bound):
             p.arrival_time = math.floor(-math.log(lcg.drand48()) / lambda_)
-        
-        p.action_exit = p.arrival_time
-        p.action = Action.new
-        p.tau = math.ceil(1/lambda_)
 
-        procsList.append(p)
-
-    # assign CPU burst and I/O block count
-    for p in procsList:
-        p.burst_time = [0] * (int(lcg.drand48() * 100) + 1) # [1, 100]
+        # assign CPU burst and I/O block count
+        p.burst_time = [0] * (int(lcg.drand48() * 100) + 1)  # [1, 100]
         p.block_time = [0] * (len(p.burst_time) - 1)
 
-    # assign CPU burst and I/O block time
-    for p in procsList:
+        # assign CPU burst and I/O block time
         for i in range(len(p.block_time)):
             # CPU burst
             p.burst_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
@@ -88,11 +81,19 @@ if __name__ == "__main__":
             p.block_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
             while (p.block_time[i] > bound):
                 p.block_time[i] = math.ceil(-math.log(lcg.drand48()) / lambda_)
-        
+
         # last CPU burst
         p.burst_time[-1] = math.ceil(-math.log(lcg.drand48()) / lambda_)
         while (p.burst_time[-1] > bound):
             p.burst_time[-1] = math.ceil(-math.log(lcg.drand48()) / lambda_)
+
+        p.action_exit = p.arrival_time
+        p.action = Action.new
+        p.tau = math.ceil(1/lambda_)
+
+        procsList.append(p)
+
+        
 
     # start simulation
     srt = SRT(procsList, alpha, t_cs)
