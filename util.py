@@ -8,6 +8,11 @@ class Action(enum.Enum):
     blocked = 3     # I/O time
     terninated = 4  # process terninates
 
+    # misc action
+    enter_CPU = 5
+    leave_CPU = 6
+    preemp_CPU = 7
+
 
 class Process:
     def __init__(self, name: str):
