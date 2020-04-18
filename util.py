@@ -22,11 +22,10 @@ class Process:
         self.burst_time = []  # CPU burst time in MS
         self.block_time = []  # I/O block time in MS
         self.index = 0
+        self.remain = 0
 
         # process current status
         self.action = Action.new
-        # action remaining time
-        self.action_remain = 0
         # time of the process finish current status in MILLISECONDS. If process
         #   enters CPU at x ms, and takes y ms CPU burst, action_exit will be
         #   x + y
