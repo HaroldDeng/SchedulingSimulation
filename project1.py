@@ -87,7 +87,7 @@ if __name__ == "__main__":
         while (p.burst_time[-1] > bound):
             p.burst_time[-1] = math.ceil(-math.log(lcg.drand48()) / lambda_)
 
-        p.action_exit = p.arrival_time
+        p.action_leave = p.arrival_time
         p.action = Action.new
         p.tau = math.ceil(1/lambda_)
 

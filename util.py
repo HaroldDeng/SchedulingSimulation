@@ -4,13 +4,10 @@ import enum
 class Action(enum.Enum):
     new = 0         # process have not arrive at CPU
     ready = 1       # ready to use CPU
-    burst = 2     # actively using CPU
-    block = 3     # I/O time
+    burst = 2       # actively using CPU
+    block = 3       # I/O time
     terninated = 4  # process terninates
-
-    # misc action
-    # enter_CPU = 5
-    # leave_CPU = 6
+    preempted = 5
 
 
 class Process:
@@ -33,6 +30,7 @@ class Process:
 
         self.wait_time = 0
         self.preempt_count = 0
+        self.switch_count = 0
         self.tau = 0
 
         # use setattr(object, name, value) to add attribute with your needs
