@@ -17,8 +17,6 @@ class Process:
         self.burst_time = []  # CPU burst time in MS
         self.block_time = []  # I/O block time in MS
         self.index = 0
-        self.total_burst = 0  # sum(self.burst_time)
-        self.total_block = 0  # sum(self.block_time)
 
         # process current status
         self.action = Action.new
