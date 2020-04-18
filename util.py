@@ -11,7 +11,6 @@ class Action(enum.Enum):
     # misc action
     enter_CPU = 5
     leave_CPU = 6
-    preemp_CPU = 7
 
 
 class Process:

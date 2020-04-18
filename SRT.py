@@ -43,148 +43,117 @@ class SRT:
         self.clock = proc.action_exit
 
         while(proc != None):
-            
+
             if proc.action == Action.enter_CPU:
                 proc.action = Action.running
-                proc.action_remain = self.t_cs >> 1
                 proc.action_exit = self.clock + (self.t_cs >> 1)
 
             elif proc.action == Action.leave_CPU:
-                proc.action = Action.running
-                proc.action_remain = self.t_cs >> 1
+                proc.action = Action.ready
                 proc.action_exit = self.clock + (self.t_cs >> 1)
+                btProc = None
+                if proc.remain == 0:
+                    self.readyQueue.append(btProc)
+                else:
+                    self.readyQueue.append(0, btProc) # preempted process
 
-            elif proc.action == Action.preemp_CPU:
+            elif proc.action == Action.new:
+                # process arrive
+                print("time {:d}ms: Process {:s} (tau {:d}ms) ".format(
+                    self.clock, proc.name, proc.tau), end="")
+                print("arrived; added to ready queue ", end="")
+                proc.action = Action.ready
+                proc.remain = proc.burst_time[0]
+                self.readyQueue.append(proc)
+                self.printReady()
+
+            elif proc.action == Action.ready:
+                # process ready for CPU burst
+                print("time {:d}ms: Process {:s} (tau {:d}ms) ".format(
+                    self.clock, proc.name, proc.tau), end="")
+                print("started using the CPU with {:d}ms burst remaining ".format(
+                    proc.action_remain), end="")
+                proc.action = Action.enter_CPU
                 proc.action_exit = self.clock
 
-    # def simulate(self):
-    #    
-    #     
+                self.actionQueue.append(proc)
+                self.printReady()
 
-    #     while proc != None:
-    #         # header
-    #         print("time {:d}ms: Process {:s} ".format(
-    #             self.clock, proc.name), end="")
+            elif proc.action == Action.running:
+                if len(proc.burst_time) - proc.index == 1:
+                    # no burst left
+                    print("terminated ", end="")
+                    proc.action = Action.terninated
+                    self.endedQueue.append(proc)
+                else:
+                    print("time {:d}ms: Process {:s} (tau {:d}ms) ".format(
+                        self.clock, proc.name, proc.tau), end="")
 
-    #         if self.clock == 92:
-    #             X = 0
-
-    #         if proc.action == Action.new:
-    #             # process arrive
-    #             print("(tau {:d}ms) ".format(proc.tau), end="")
-    #             # new process arrived
-    #             print("arrived; added to ready queue ", end="")
-    #             proc.action = Action.ready
-    #             proc.action_remain = proc.burst_time[proc.index]
-    #             self.readyQueue.append(proc)
-    #             self.printReady()
-
-    #             if btProc == None:
-    #                 # push into CPU
-    #                 proc.action_exit = self.clock + (self.t_cs >> 1)
-    #                 self.actionQueue.append(self.readyQueue.pop())
-    #                 btProc = proc
-
-    #         elif proc.action == Action.ready:
-    #             print("(tau {:d}ms) ".format(proc.tau), end="")
-    #             # process ready for CPU burst
-    #             print("started using the CPU with {:d}ms burst remaining ".format(
-    #                 proc.action_remain), end="")
-    #             proc.action = Action.running
-    #             proc.action_exit = self.clock + proc.action_remain
-    #             self.actionQueue.append(proc)
-    #             self.printReady()
-
-    #         elif proc.action == Action.running:
-    #             if len(proc.burst_time) - proc.index == 1:
-    #                 # no burst left
-    #                 print("terminated ", end="")
-    #                 proc.action = Action.terninated
-    #                 self.endedQueue.append(proc)
-    #                 self.clock += self.t_cs >> 1
-    #             else:
-    #                 print("(tau {:d}ms) ".format(proc.tau), end="")
-    #                 if len(proc.burst_time) - proc.index == 2:
-    #                     # 1 burst left
-    #                     print("completed a CPU burst; 1 burst to go ", end="")
-    #                 else:
-    #                     # > 1 bursts left
-    #                     print("completed a CPU burst; {:d} bursts to go ".format(
-    #                         len(proc.burst_time) - proc.index - 1), end="")
-    #                 self.printReady()
-
-    #                 # recalculate tau
-    #                 proc.tau = math.ceil(self.alpha * proc.burst_time[proc.index] +
-    #                                      (1-self.alpha) * proc.tau)
-    #                 print("time {:d}ms: Recalculated tau = {:d}ms for process {:s} ".format(
-    #                     self.clock, proc.tau, proc.name), end="")
-    #                 self.printReady()
-
-    #                 proc.action_exit = self.clock + \
-    #                     proc.block_time[proc.index] + (self.t_cs >> 1)
-    #                 print("time {:d}ms: Process {:s} switching out of CPU; ".format(
-    #                     self.clock, proc.name), end="")
-    #                 print("will block on I/O until time {:d}ms ".format(
-    #                     proc.action_exit), end="")
-    #                 proc.action = Action.blocked
-    #                 self.actionQueue.append(proc)
-
-    #             self.printReady()
-    #             if len(self.readyQueue) > 0:
-    #                 # push new process into CPU
-    #                 btProc = self.readyQueue.pop(0)
-    #                 btProc.action_exit = self.clock + self.t_cs
-    #                 self.actionQueue.append(btProc)
-    #             else:
-    #                 btProc = None
-
-    #         elif proc.action == Action.blocked:
-    #             print("(tau {:d}ms) ".format(proc.tau), end="")
-    #             proc.index += 1
-    #             proc.action = Action.ready
-    #             self.readyQueue.append(proc)
-
-    #             # if remain burst time is greater than I/O ended
-    #             #     process burst time, preemption
-    #             if btProc != None and btProc.action_exit - self.clock > proc.burst_time[proc.index]:
-    #                 print("completed I/O; preempting {:s} ".format(btProc.name),
-    #                       end="")
-    #                 self.printReady()
+                    if len(proc.burst_time) - proc.index == 2:
+                        # 1 burst left
+                        print("completed a CPU burst; 1 burst to go ", end="")
+                    else:
+                            # > 1 bursts left
+                        print("completed a CPU burst; {:d} bursts to go ".format(
+                            len(proc.burst_time) - proc.index - 1), end="")
                     
-    #                 # update bursting process
-    #                 btProc.preempt_count += 1
-    #                 btProc.action_remain = btProc.action_exit - self.clock
-    #                 btProc.action = Action.ready
-    #                 self.readyQueue.insert(0, btProc)
-                    
-    #                 self.readyQueue.pop()
-    #                 proc.action_exit = self.clock + self.t_cs
-    #                 self.actionQueue.append(proc)
+                    self.printReady()
 
-    #                 btProc = proc
+                    # recalculate tau
+                    proc.tau = math.ceil(self.alpha * proc.burst_time[proc.index] +
+                                         (1-self.alpha) * proc.tau)
+                    print("time {:d}ms: Recalculated tau = {:d}ms for process {:s} ".format(
+                        self.clock, proc.tau, proc.name), end="")
+                    self.printReady()
 
-    #             else:
-    #                 # no preemption
-    #                 print("completed I/O; added to ready queue ", end="")
+                    proc.action_exit = self.clock + \
+                        proc.block_time[proc.index] + (self.t_cs >> 1)
+                    print("time {:d}ms: Process {:s} switching out of CPU; ".format(
+                        self.clock, proc.name), end="")
+                    print("will block on I/O until time {:d}ms ".format(
+                        proc.action_exit), end="")
+                    proc.action = Action.blocked
+                    self.actionQueue.append(proc)
 
-    #                 self.printReady()
+                self.printReady()
 
-    #         else:
-    #             # error
-    #             print("ERROR: unknown action on SRT", file=sys.stderr, end="")
-    #             return
+            elif proc.action == Action.blocked:
+                print("time {:d}ms: Process {:s} (tau {:d}ms) ".format(
+                    self.clock, proc.name, proc.tau), end="")
+                proc.index += 1
+                btProc.action = Action.leave_CPU
 
+                # if remain burst time is greater than I/O ended
+                #     process burst time, preemption
+                if btProc != None and btProc.action_exit - self.clock > proc.burst_time[proc.index]:
+                    print("completed I/O; preempting {:s} ".format(btProc.name),
+                          end="")
 
-    #         if len(self.actionQueue) > 0:
-    #             self._sort()
-    #             proc = self.actionQueue.pop(0)
-    #             self.clock = proc.action_exit
-    #         elif len(self.readyQueue) > 0:
-    #             proc = self.readyQueue.pop(0)
-    #             self.clock += self.t_cs >> 1
-    #         else:
-    #             proc = None
-        # print("time {:d}ms: Simulator ended for SJF [Q <empty>]".format(self.clock))
+                    # update bursting process
+                    btProc.preempt_count += 1
+                    btProc.remain = btProc.action_exit - self.clock
+                    self.readyQueue.insert(0, btProc)
+
+                else:
+                    # no preemption
+                    print("completed I/O; added to ready queue ", end="")
+                    btProc.remain = 0
+
+            else:
+                # error
+                print("ERROR: unknown action on SRT", file=sys.stderr, end="")
+                return
+
+            if len(self.actionQueue) > 0:
+                self._sort()
+                proc = self.actionQueue.pop(0)
+                self.clock = proc.action_exit
+            elif len(self.readyQueue) > 0:
+                proc = self.readyQueue.pop(0)
+                self.clock += self.t_cs >> 1
+            else:
+                proc = None
+        print("time {:d}ms: Simulator ended for SJF [Q <empty>]".format(self.clock))
 
     """
     print readyQueue
