@@ -4,13 +4,13 @@ import enum
 class Action(enum.Enum):
     new = 0         # process have not arrive at CPU
     ready = 1       # ready to use CPU
-    running = 2     # actively using CPU
-    blocked = 3     # I/O time
+    burst = 2     # actively using CPU
+    block = 3     # I/O time
     terninated = 4  # process terninates
 
     # misc action
-    enter_CPU = 5
-    leave_CPU = 6
+    # enter_CPU = 5
+    # leave_CPU = 6
 
 
 class Process:
@@ -28,7 +28,8 @@ class Process:
         # time of the process finish current status in MILLISECONDS. If process
         #   enters CPU at x ms, and takes y ms CPU burst, action_exit will be
         #   x + y
-        self.action_exit = 0
+        self.action_enter = 0
+        self.action_leave = 0
 
         self.wait_time = 0
         self.preempt_count = 0

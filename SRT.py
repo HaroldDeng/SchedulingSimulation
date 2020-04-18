@@ -39,25 +39,24 @@ class SRT:
         self._sort()
 
         proc = self.actionQueue.pop(0)
-        btProc = None  # bursting process
-        self.clock = proc.action_exit
+        btProc = None  # bursting process or the process about to entering CPU
 
         while(proc != None):
 
-            if proc.action == Action.enter_CPU:
-                proc.action = Action.running
-                proc.action_exit = self.clock + (self.t_cs >> 1)
+            # if proc.action == Action.enter_CPU:
+            #     proc.action = Action.burst
+            #     proc.action_exit = self.clock + (self.t_cs >> 1)
 
-            elif proc.action == Action.leave_CPU:
-                proc.action = Action.ready
-                proc.action_exit = self.clock + (self.t_cs >> 1)
-                btProc = None
-                if proc.remain == 0:
-                    self.readyQueue.append(btProc)
-                else:
-                    self.readyQueue.append(0, btProc) # preempted process
+            # elif proc.action == Action.leave_CPU:
+            #     proc.action = Action.ready
+            #     proc.action_exit = self.clock + (self.t_cs >> 1)
+            #     btProc = None
+            #     if proc.remain == 0:
+            #         self.readyQueue.append(btProc)
+            #     else:
+            #         self.readyQueue.append(0, btProc) # preempted process
 
-            elif proc.action == Action.new:
+            if proc.action == Action.new:
                 # process arrive
                 print("time {:d}ms: Process {:s} (tau {:d}ms) ".format(
                     self.clock, proc.name, proc.tau), end="")
@@ -73,13 +72,13 @@ class SRT:
                     self.clock, proc.name, proc.tau), end="")
                 print("started using the CPU with {:d}ms burst remaining ".format(
                     proc.action_remain), end="")
-                proc.action = Action.enter_CPU
+                proc.action = Action.burst
                 proc.action_exit = self.clock
 
                 self.actionQueue.append(proc)
                 self.printReady()
 
-            elif proc.action == Action.running:
+            elif proc.action == Action.burst:
                 if len(proc.burst_time) - proc.index == 1:
                     # no burst left
                     print("terminated ", end="")
@@ -144,13 +143,18 @@ class SRT:
                 print("ERROR: unknown action on SRT", file=sys.stderr, end="")
                 return
 
+            if btProc == None and len(self.readyQueue) > 0:
+                # load into CPU
+                proc = self.readyQueue.pop(0)
+                proc.action = Action.ready
+                proc.action_enter = self.clock
+                proc.action_leave = self.clock + (self.t_cs >> 1)
+                self.actionQueue.append(proc)
+
             if len(self.actionQueue) > 0:
                 self._sort()
                 proc = self.actionQueue.pop(0)
                 self.clock = proc.action_exit
-            elif len(self.readyQueue) > 0:
-                proc = self.readyQueue.pop(0)
-                self.clock += self.t_cs >> 1
             else:
                 proc = None
         print("time {:d}ms: Simulator ended for SJF [Q <empty>]".format(self.clock))
