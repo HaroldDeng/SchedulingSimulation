@@ -6,7 +6,7 @@ class Action(enum.Enum):
     ready = 1       # ready to use CPU
     burst = 2       # actively using CPU
     block = 3       # I/O time
-    terninated = 4  # process terninates
+    ternimated = 4  # process terminates
     
     enter_CPU = 5
     leave_CPU = 6
@@ -26,7 +26,7 @@ class Process:
         # process current status
         self.action = Action.new
         # time of the process finish current status in MILLISECONDS. If process
-        #   enters CPU at x ms, and takes y ms CPU burst, action_exit will be
+        #   enters CPU at x ms, and takes y ms CPU burst, action_leave will be
         #   x + y
         self.action_enter = 0
         self.action_leave = 0
@@ -41,7 +41,6 @@ class Process:
 
 """
 Linear congruential generator, generate random numbers
-
 Algorithm is inherited from POSIX
 """
 
