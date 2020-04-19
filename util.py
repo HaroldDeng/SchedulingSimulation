@@ -10,6 +10,7 @@ class Action(enum.Enum):
     
     enter_CPU = 5
     leave_CPU = 6
+    preempted = 7
 
 
 class Process:

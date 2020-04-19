@@ -48,8 +48,11 @@ class SRT:
                 p for p in self.actionQueue
                 if self.clock == p.action_enter or self.clock == p.action_leave]
             interest.sort(key=self.__sort_by_action)
-            if self.clock == 2714:
+
+            ############################
+            if self.clock == 339:
                 tmp = 0
+            ############################
 
             for proc in interest:
 
@@ -196,7 +199,6 @@ class SRT:
                             (self.btProc.burst_time[self.btProc.index] -
                              self.btProc.remain)
                     if estmate < proc.tau:
-                        # if self.btProc == None or newT < proc.tau or self.btProc.action != Action.burst:
                         # no preemption
                         proc.action_enter = self.clock
                         proc.action_leave = self.clock + (self.t_cs >> 1)
@@ -274,13 +276,14 @@ class SRT:
     """
 
     def __sort_by_action(self, proc: Process):
-        if proc.action == Action.burst:
+        if proc.action == Action.new:
             return ord(proc.name[0]) - 65 + 26 * 3
-        elif proc.action == Action.block:
+        elif proc.action == Action.burst:
             return ord(proc.name[0]) - 65 + 26 * 2
-        elif proc.action == Action.new:
+        elif proc.action == Action.block:
             return ord(proc.name[0]) - 65 + 26 * 1
         else:
+            # print("###############", proc.action)
             return ord(proc.name[0]) - 65 + 26
 
     """
@@ -290,4 +293,4 @@ class SRT:
     """
 
     def __sort_by_remain(self, proc: Process):
-        return proc.remain + ord(proc.name[0]) - 65
+        return proc.tau + ord(proc.name[0])

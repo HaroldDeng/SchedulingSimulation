@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "project1.py",
             "console": "integratedTerminal",
-            "args": ["2", "0.01", "256", "2", "4", "0.5", "128"]
+            "args": ["2", "0.01", "256", "16", "4", "0.5", "128"]
         }
     ]
 }
