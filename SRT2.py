@@ -49,9 +49,6 @@ class SRT:
                 # process arrive
                 proc.action = Action.ready
                 proc.remain = proc.burst_time[0]
-                if self.flag == False and btProc != None:
-                    btProc.remain -= btProc.remain -= self.clock - btProc.action_enter
-                    if btProc.remain > proc.remain:
                         
                 self.readyQueue.append(proc)
 

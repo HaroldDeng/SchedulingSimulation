@@ -7,7 +7,10 @@ class Action(enum.Enum):
     burst = 2       # actively using CPU
     block = 3       # I/O time
     terninated = 4  # process terninates
-    preempted = 5
+    
+    enter_CPU = 5
+    leave_CPU = 6
+    preempted = 7
 
 
 class Process:
