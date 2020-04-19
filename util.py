@@ -30,7 +30,6 @@ class Process:
         self.action_enter = 0
         self.action_leave = 0
 
-        self.wait_time = 0
         self.preempt_count = 0
         self.switch_count = 0
         self.tau = 0

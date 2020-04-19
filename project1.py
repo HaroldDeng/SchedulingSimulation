@@ -97,4 +97,5 @@ if __name__ == "__main__":
 
     # start simulation
     srt = SRT(procsList, alpha, t_cs)
-    srt.simulate()
+    retVal = srt.simulate()
+    print(retVal)

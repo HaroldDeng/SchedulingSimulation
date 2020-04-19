@@ -32,7 +32,7 @@ class SRT:
         Core algorithm of SRT implementation.
     """
 
-    def simulate(self):
+    def simulate(self) -> (int, int, int, int, int):
         #  print all processes
         for p in self.actionQueue:
             print(
@@ -48,14 +48,11 @@ class SRT:
                 p for p in self.actionQueue
                 if self.clock == p.action_enter or self.clock == p.action_leave]
             interest.sort(key=self.__sort_by_action)
-            
-            if self.clock == 627:
-                a = sum(self.actionQueue[0].burst_time[self.actionQueue[0].index:])
-                b = sum(self.btProc.burst_time[self.btProc.index:])
+            if self.clock == 2714:
                 tmp = 0
 
-
             for proc in interest:
+
                 if proc.action == Action.enter_CPU and self.clock == proc.action_leave:
                     self.actionQueue.remove(proc)  # pop from actionQueue
                     # process being push into CPU
@@ -72,13 +69,19 @@ class SRT:
                     proc.action = Action.burst
                     proc.action_enter = self.clock
                     proc.action_leave = self.clock + proc.remain
+                    proc.switch_count += 1
                     self.actionQueue.append(proc)
                     self.btProc = proc
 
                 if proc.action == Action.leave_CPU and self.clock == proc.action_leave:
                     self.actionQueue.remove(proc)  # pop from actionQueue
                     # process finished context switch
-                    if proc.remain == 0:
+                    if proc.remain == -1:
+                        # terminated
+                        proc.action = Action.terninated
+                        self.endedQueue.append(proc)
+                        self.btProc = None
+                    elif proc.remain == 0:
                         # entering I/O time
                         proc.action = Action.block
                         proc.action_enter = self.clock
@@ -88,7 +91,7 @@ class SRT:
                         self.actionQueue.append(proc)
                     else:
                         # process being preempted
-                        proc.action = Action.ready
+                        self.btProc = Action.ready
                         self.btProc = self.ptProc
                         self.ptProc = None
                         self.readyQueue.append(proc)
@@ -115,14 +118,13 @@ class SRT:
 
                     if len(self.readyQueue) > 0:
                         proc2 = self.readyQueue[0]
-                        if proc.action_leave > self.clock + (self.t_cs >> 1) + proc2.burst_time[proc2.index]:
-                            # if remain burst time is greater than I/O ended
-                            #     process burst time, preemption
-                            # take bursting process out of CPU, then insert new process
-                            proc.action = Action.preempted
+                        if proc2.tau < proc.tau:
+                            # preempting
+                            proc.action = Action.leave_CPU
                             proc.action_enter = self.clock
                             proc.action_leave = self.clock + \
                                 (self.t_cs >> 1)
+                            proc.preempt_count += 1
                             self.actionQueue.remove(proc)
                             proc2.action = Action.enter_CPU
                             proc2.action_enter = self.clock + (self.t_cs >> 1)
@@ -136,14 +138,19 @@ class SRT:
                 if proc.action == Action.burst and self.clock == proc.action_leave:
                     self.actionQueue.remove(proc)  # pop from actionQueue
                     # end of I/O
-                    print("time {:d}ms: Process {:s} (tau {:d}ms) ".format(
-                        self.clock, proc.name, proc.tau), end="")
+                    print("time {:d}ms: Process {:s} ".format(
+                        self.clock, proc.name), end="")
                     if len(proc.burst_time) == proc.index + 1:
                         # no burst left
-                        proc.action = Action.terninated
-                        self.endedQueue.append(proc)
+                        proc.action = Action.leave_CPU
+                        proc.action_enter = self.clock
+                        proc.action_leave = self.clock + (self.t_cs >> 1)
+                        proc.remain = -1
+                        self.actionQueue.append(proc)
                         print("terminated ", end="")
+
                     else:
+                        print("(tau {:d}ms) ".format(proc.tau), end="")
                         if len(proc.burst_time) - proc.index == 2:
                             # 1 burst left
                             print(
@@ -171,7 +178,7 @@ class SRT:
                             self.clock, proc.name), end="")
                         print("will block on I/O until time {:d}ms ".format(
                             proc.action_leave + proc.block_time[proc.index]), end="")
-                        self.printReady()
+                    self.printReady()
 
                 if proc.action == Action.block and self.clock == proc.action_leave:
                     self.actionQueue.remove(proc)  # pop from actionQueue
@@ -182,13 +189,14 @@ class SRT:
                     self.readyQueue.append(proc)
                     self.readyQueue.sort(key=self.__sort_by_remain)
 
-                    # newT = 0
+                    estmate = -1
                     if self.btProc != None and self.btProc.action == Action.burst:
                         self.btProc.remain -= self.clock - self.btProc.action_enter
-                        # newT = math.ceil(self.alpha * (self.clock - self.btProc.action_enter) +
-                        #                  (1-self.alpha) * self.btProc.tau)
-                    if self.btProc == None or self.btProc.remain < proc.burst_time[proc.index-1] or self.btProc.action != Action.burst:
-                    # if self.btProc == None or newT < proc.tau or self.btProc.action != Action.burst:
+                        estmate = self.btProc.tau - \
+                            (self.btProc.burst_time[self.btProc.index] -
+                             self.btProc.remain)
+                    if estmate < proc.tau:
+                        # if self.btProc == None or newT < proc.tau or self.btProc.action != Action.burst:
                         # no preemption
                         proc.action_enter = self.clock
                         proc.action_leave = self.clock + (self.t_cs >> 1)
@@ -199,7 +207,7 @@ class SRT:
                         # if remain burst time is greater than I/O ended
                         #     process burst time, preemption
                         # take bursting process out of CPU, then insert new process
-                        self.btProc.action = Action.preempted
+                        self.btProc.action = Action.leave_CPU
                         self.btProc.action_enter = self.clock
                         self.btProc.action_leave = self.clock + \
                             (self.t_cs >> 1)
@@ -208,22 +216,41 @@ class SRT:
                         proc.action_enter = self.clock + (self.t_cs >> 1)
                         proc.action_leave = self.clock + self.t_cs
                         self.ptProc = proc
+                        self.ptProc.preempt_count += 1
                         self.actionQueue.append(proc)
                         print("completed I/O; preempting {:s} ".format(self.btProc.name),
                               end="")
                         self.printReady()
 
-                # push new process into CPU
-                if self.btProc == None and len(self.readyQueue) > 0:
-                    self.btProc = self.readyQueue.pop(0)
-                    self.btProc.action = Action.enter_CPU
-                    self.btProc.action_enter = self.clock
-                    self.btProc.action_leave = self.clock + \
-                        (self.t_cs >> 1)
-                    self.actionQueue.append(self.btProc)
+            # push new process into CPU
+            if self.btProc == None and len(self.readyQueue) > 0:
+                self.btProc = self.readyQueue.pop(0)
+                self.btProc.action = Action.enter_CPU
+                self.btProc.action_enter = self.clock
+                self.btProc.action_leave = self.clock + \
+                    (self.t_cs >> 1)
+                self.actionQueue.append(self.btProc)
 
             # insert new process
             self.clock += 1
+
+        print("time {:d}ms: Simulator ended for SRT ".format(self.clock - 1), end="")
+        self.printReady()
+
+        tmp = [sum(x.burst_time) for x in self.endedQueue]
+        avg_bt = sum(tmp) / len(tmp)  # average burst time
+        tmp = [x.action_leave - x.arrival_time - sum(x.burst_time) - 
+            sum(x.block_time) - 2 * x.switch_count * (self.t_cs >> 1)
+            for x in self.endedQueue]
+        avg_wt = sum(tmp) / len(tmp)  # average wait time
+        tmp = [x.action_leave - x.arrival_time for x in self.endedQueue]
+        avg_tt = sum(tmp) / len(tmp)  # average turnaround time
+        tmp = [x.switch_count for x in self.endedQueue]
+        sum_cs = sum(tmp)             # total context switches
+        tmp = [x.preempt_count for x in self.endedQueue]
+        sum_pp = sum(tmp)             # total preemptions
+        return (avg_bt, avg_wt, avg_tt, sum_cs, sum_pp)
+
 
     """
     print readyQueue
