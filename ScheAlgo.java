@@ -6,8 +6,9 @@ public class ScheAlgo {
     List<Process> endedList; // processes that is terminated
     FormatedStdout fs;
     int t_cs;
-    int clock;
+    double alpha;
     boolean add_end;
+    int clock;
 
     double[] simulate() {
         return null;

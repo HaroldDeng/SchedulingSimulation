@@ -1,135 +1,164 @@
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+// import java.util.List;
+// import java.util.ArrayList;
+// import java.util.Iterator;
 
-/**
- * A class that represents the First Come First Serve CPU scheduling algorithm
- */
-public class SRT extends ScheAlgo{
-    public SRT(List<Process> procs, int t_cs, boolean add_end) {
-        readyList = new ArrayList<Process>(procs.size());
-        actionList = new ArrayList<Process>(procs.size());
-        endedList = new ArrayList<Process>(procs.size());
-        fs = new FormatedStdout("FCFS", Integer.MAX_VALUE);
-        this.t_cs = t_cs;
-        this.add_end = add_end;
-        clock = 0;
+// /**
+//  * A class that represents the First Come First Serve CPU scheduling algorithm
+//  */
+// public class SRT extends ScheAlgo {
+//     public SRT(List<Process> procs, int t_cs, int alpha, boolean add_end) {
+//         readyList = new ArrayList<Process>(procs.size());
+//         actionList = new ArrayList<Process>(procs.size());
+//         endedList = new ArrayList<Process>(procs.size());
+//         fs = new FormatedStdout("SRT", Integer.MAX_VALUE);
+//         this.t_cs = t_cs;
+//         this.alpha = alpha;
+//         this.add_end = add_end;
+//         clock = 0;
 
-        // deep copy
-        Iterator<Process> itr = procs.iterator();
-        try {
-            while (itr.hasNext()) {
-                actionList.add(itr.next().clone());
-            }
-        } catch (CloneNotSupportedException exc) {
-            System.err.print("ERROR: Clone process failed.");
-            System.exit(-1);
-        }
-    }
+//         // deep copy
+//         Iterator<Process> itr = procs.iterator();
+//         try {
+//             while (itr.hasNext()) {
+//                 actionList.add(itr.next().clone());
+//             }
+//         } catch (CloneNotSupportedException exc) {
+//             System.err.print("ERROR: Clone process failed.");
+//             System.exit(-1);
+//         }
+//     }
 
-    @Override
-    public double[] simulate() {
-        // print all processes
-        fs.printAll(actionList);
-        System.out.println("time 0ms: Simulator started for FCFS [Q <empty>]");
-        actionList.sort(new _sortByState());
-        // store process that is in load state
-        Process btProc = null; // process with LOAD or BURST or UNLOAD state
-        while (actionList.size() != 0) {
-            
-            // get time from next process
-            clock = actionList.get(0).kTime;
+//     @Override
+//     public double[] simulate() {
+//         // print all processes
+//         fs.printAll(actionList);
+//         System.out.println("time 0ms: Simulator started for FCFS [Q <empty>]");
+//         actionList.sort(new _sortByState());
+//         // store process that is in load state
+//         Process btProc = null; // process with LOAD or BURST or UNLOAD state
+//         while (actionList.size() != 0) {
 
-            while (actionList.size() > 0 && actionList.get(0).kTime == clock) {
-                Process proc = actionList.remove(0);
-                switch (proc.state) {
-                    case NEW:
-                        proc.state = States.READY;
-                        readyList.add(proc);
-                        fs.printArrival(clock, proc, readyList);
-                        break;
+//             // get time from next process
+//             clock = actionList.get(0).kTime;
 
-                    case READY:
-                        // perpear for load into CPU, load state
-                        proc.state = States.LOAD;
-                        proc.kTime += t_cs >> 1;
-                        actionList.add(proc);
-                        btProc = proc;
-                        break;
+//             while (actionList.size() > 0 && actionList.get(0).kTime == clock) {
+//                 Process proc = actionList.remove(0);
+//                 switch (proc.state) {
+//                     case NEW:
+//                         proc.state = States.READY;
+//                         if (add_end) {
+//                             readyList.add(readyList.size(), proc);
+//                         } else {
+//                             readyList.add(proc);
+//                         }
 
-                    case LOAD:
-                        // loaded into CPU complete, next state is burst
-                        proc.state = States.BURST;
-                        proc.kTime += proc.remain;
-                        // proc.csCount += 1; // context switch
-                        fs.printStartedBurst(clock, proc, readyList);
-                        actionList.add(proc);
-                        break;
+//                         fs.printArrival(clock, proc, readyList);
+//                         break;
 
-                    case BURST:
-                        // burst complete, into unload state
-                        proc.state = States.UNLOAD;
-                        proc.kTime += t_cs >> 1;
-                        if (proc.burstTimes.length - proc.progress == 1) {
-                            // process terminated, but unload from CPU first
-                            fs.printTerminate(clock, proc, readyList);
-                        } else {
-                            fs.printEndedBurst(clock, proc, readyList);
-                            proc.kTime += proc.blockTimes[proc.progress]; // just for print
-                            fs.printStartedBlock(clock, proc, readyList);
-                            proc.kTime -= proc.blockTimes[proc.progress];
-                        }
-                        actionList.add(proc);
-                        break;
+//                     case READY:
+//                         // perpear for load into CPU, load state
+//                         proc.state = States.LOAD;
+//                         proc.kTime += t_cs >> 1;
+//                         actionList.add(proc);
+//                         btProc = proc;
+//                         break;
 
-                    case UNLOAD:
-                        // unloaded from CPU
-                        if (proc.burstTimes.length - proc.progress == 1) {
-                            // no more burst to go, process terminate
-                            proc.state = States.TERMINATED;
-                            endedList.add(proc);
-                        } else {
-                            proc.state = States.BLOCK;
-                            proc.kTime += proc.blockTimes[proc.progress];
-                            actionList.add(proc);
-                        }
-                        proc.csCount += 1; // context switch
-                        btProc = null;
-                        break;
+//                     case LOAD:
+//                         // loaded into CPU complete, next state is burst
+//                         proc.state = States.BURST;
+//                         proc.kTime += proc.remain;
+//                         // proc.csCount += 1; // context switch
+//                         fs.printStartedBurst(clock, proc, readyList);
+//                         actionList.add(proc);
+//                         break;
 
-                    case BLOCK:
-                        // block complete, no preemption in FCFS
-                        proc.state = States.READY;
-                        proc.progress += 1;
-                        proc.remain = proc.burstTimes[proc.progress];
-                        readyList.add(proc);
-                        fs.printEndedBlock(clock, proc, null, readyList);
-                        break;
+//                     case BURST:
+//                         // burst complete, into unload state
+//                         proc.state = States.UNLOAD;
+//                         proc.kTime += t_cs >> 1;
+//                         if (proc.burstTimes.length - proc.progress == 1) {
+//                             // process terminated, but unload from CPU first
+//                             fs.printTerminate(clock, proc, readyList);
+//                         } else {
+//                             fs.printEndedBurst(clock, proc, readyList);
+//                             proc.tau = alpha * proc.burstTimes[proc.progress] + (1 - alpha) * proc.tau;
+//                             fs.printReTau(clock, proc, readyList);
+//                             proc.kTime += proc.blockTimes[proc.progress]; // just for print
+//                             fs.printStartedBlock(clock, proc, readyList);
+//                             proc.kTime -= proc.blockTimes[proc.progress];
+//                         }
+//                         actionList.add(proc);
+//                         break;
 
-                    default:
-                        System.err.println("Error: unexpected state.");
-                        System.exit(-1);
-                }
+//                     case UNLOAD:
+//                         // unloaded from CPU
+//                         if (proc.burstTimes.length - proc.progress == 1) {
+//                             // no more burst to go, process terminate
+//                             proc.state = States.TERMINATED;
+//                             endedList.add(proc);
+//                         } else {
+//                             proc.state = States.BLOCK;
+//                             proc.kTime += proc.blockTimes[proc.progress];
+//                             actionList.add(proc);
+//                         }
+//                         proc.csCount += 1; // context switch
+//                         btProc = null;
+//                         break;
 
-                // sort
-                actionList.sort(new _sortByState());
-            }
+//                     case BLOCK:
+//                         // block complete
+//                         proc.state = States.READY;
+//                         proc.progress += 1;
+//                         proc.remain = proc.burstTimes[proc.progress];
+//                         if (add_end) {
+//                             readyList.add(readyList.size(), proc);
+//                         } else {
+//                             readyList.add(proc);
+//                         }
 
-            // empty CPU, add new process
-            if (btProc == null && readyList.size() > 0) {
-                Process tmp = readyList.remove(0);
-                tmp.kTime = clock;
-                actionList.add(tmp);
-                actionList.sort(new _sortByState());
-            }
-        }
+//                         // check preemption
+//                         if (btProc != null) {
+//                             btProc.remain = btProc.kTime - clock;
+//                             int tPass = btProc.burstTimes[btProc.progress] - btProc.remain;
+//                             if (btProc.tau - tPass > proc.burstTimes[proc.progress]) {
+//                                 // estimated time left is greater than proc's burst time
+//                                 // preemption
+//                                 btProc.pmCount += 1;
+//                                 btProc.state = States.UNLOAD;
+//                                 fs.printEndedBlock(clock, proc, btProc, readyList);
+//                             } else {
+//                                 fs.printEndedBlock(clock, proc, null, readyList);
+//                             }
+//                         } else {
+//                             fs.printEndedBlock(clock, proc, null, readyList);
+//                         }
 
-        System.out.printf("time %dms: Simulator ended for FCFS ", clock);
-        fs.printReady(readyList);
+//                         break;
 
-        double retVal[] = new double[5];
-        calRetVal(retVal);
-        System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
-        return retVal;
-    }
-}
+//                     default:
+//                         System.err.println("Error: unexpected state.");
+//                         System.exit(-1);
+//                 }
+
+//                 // sort
+//                 actionList.sort(new _sortByState());
+//             }
+
+//             // empty CPU, add new process
+//             if (btProc == null && readyList.size() > 0) {
+//                 Process tmp = readyList.remove(0);
+//                 tmp.kTime = clock;
+//                 actionList.add(tmp);
+//                 actionList.sort(new _sortByState());
+//             }
+//         }
+
+//         System.out.printf("time %dms: Simulator ended for FCFS ", clock);
+//         fs.printReady(readyList);
+
+//         double retVal[] = new double[5];
+//         calRetVal(retVal);
+//         System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
+//         return retVal;
+//     }
+// }

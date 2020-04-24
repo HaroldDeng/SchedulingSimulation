@@ -147,17 +147,18 @@ class FormatedStdout {
     }
 
     public void printEndedBlock(int clock, Process proc, Process proc2, List<Process> readyList) {
-        // clock 2516ms: Process A completed I/O; added to ready queue [Q A]
-        // clock 92ms: Process A (tau 78ms) completed I/O; preempting B [Q A]
         if (clock > limit) {
             return;
-        } else if (mode.matches("FCFS|RR") || proc2 == null) {
+        } else if (mode.matches("FCFS|RR")) {
             // no preemption
             System.out.printf("time %dms: Process %c completed I/O; added to ready queue ", clock, proc.name);
-        } else {
-            // no preemption
+        } else if (proc2 != null) {
+            // preemption
             System.out.printf("time %dms: Process %c (tau %dms) completed I/O; preempting %c ", clock, proc.name,
                     proc.tau, proc2.name);
+        } else {
+            System.out.printf("time %dms: Process %c (tau %dms) completed I/O; added to ready queue ", clock, proc.name,
+                    proc.tau);
         }
         printReady(readyList);
     }
@@ -185,7 +186,20 @@ class FormatedStdout {
 class _sortByArrival implements Comparator<Process> {
     @Override
     public int compare(Process p1, Process p2) {
-        return p1.kTime - p2.kTime;
+        if (p1.kTime != p2.kTime) {
+            return p1.kTime - p2.kTime;
+        }
+        return p1.name - p2.name;
+    }
+}
+
+class _sortByTau implements Comparator<Process> {
+    @Override
+    public int compare(Process p1, Process p2) {
+        if (p1.tau != p2.tau) {
+            return p1.tau - p2.tau;
+        }
+        return p1.name - p2.name;
     }
 }
 
@@ -224,9 +238,8 @@ class _sortByState implements Comparator<Process> {
         } else if (p1.state == States.NEW && p2.state != States.NEW) {
             // p1 is newly arrive process
             return 1;
-        } else {
-            return p1.name - p2.name;
         }
+        return p1.name - p2.name;
 
         // ignore terminated state
     }

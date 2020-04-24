@@ -1,224 +1,146 @@
-// import java.util.*;
 
-// public class SJF {
-//     private Process[] processes;
-//     private PriorityQueue<Process> arriveQueue;
-//     private PriorityQueue<Process> readyQueue;
-//     private LinkedList<Process> ioList;
+/**
+ * In SJF, processes are stored in the ready queue in order of 
+ *      priority based on their CPU burst times. More specifically, 
+ *      the process with the shortest CPU burst time will be selected 
+ *      as the next processexecuted by the CPU
+ */
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-//     public SJF() {
-//         this.processes = Process.generateProcesses(true);
-//         this.arriveQueue = new PriorityQueue<Process>(new Comparator<Process>() {
-//             @Override
-//             public int compare(Process arg0, Process arg1) {
-//                 return arg0.arriveTime - arg1.arriveTime;
-//             }
-//         });
-//         this.readyQueue = new PriorityQueue<Process>(new Comparator<Process>() {
+/**
+ * A class that represents the First Come First Serve CPU scheduling algorithm
+ */
+public class SJF extends ScheAlgo {
+    public SJF(List<Process> procs, int t_cs, double alpha) {
+        readyList = new ArrayList<Process>(procs.size());
+        actionList = new ArrayList<Process>(procs.size());
+        endedList = new ArrayList<Process>(procs.size());
+        fs = new FormatedStdout("SJF", Integer.MAX_VALUE);
+        this.t_cs = t_cs;
+        this.alpha = alpha;
+        clock = 0;
 
-//             @Override
-//             public int compare(Process p1, Process p2) {
-//                 int e1 = p1.estimates[p1.index];
-//                 int e2 = p2.estimates[p2.index];
-//                 if (e1 == e2)
-//                     return p1.name.compareTo(p2.name);
-//                 else
-//                     return p1.estimates[p1.index] - p2.estimates[p2.index];
-//             }
-//         });
-//         this.ioList = new LinkedList<Process>();
-//     }
+        // deep copy
+        Iterator<Process> itr = procs.iterator();
+        try {
+            while (itr.hasNext()) {
+                actionList.add(itr.next().clone());
+            }
+        } catch (CloneNotSupportedException exc) {
+            System.err.print("ERROR: Clone process failed.");
+            System.exit(-1);
+        }
+    }
 
-//     public double[] simulate() {
-//         String result = "Algorithm SJF\n";
-//         System.out.println("time 0ms: Simulator started for SJF [Q <empty>]");
+    @Override
+    public double[] simulate() {
+        // print all processes
+        fs.printAll(actionList);
+        System.out.println("time 0ms: Simulator started for SJF [Q <empty>]");
+        actionList.sort(new _sortByState());
+        // store process that is in load state
+        Process btProc = null; // process with LOAD or BURST or UNLOAD state
+        while (actionList.size() != 0) {
 
-//         // initialize arriveQueue and add process with arriveTime = 0 into readyList
-//         for (int i = 0; i < processes.length; i++) {
+            // get time from next process
+            clock = actionList.get(0).kTime;
 
-//             if (processes[i].remainingTime == 0) {
-//                 processes[i].setState(ProcessState.READY);
-//                 readyQueue.add(processes[i]);
-//                 System.out.printf("time %dms: Process %s (tau %dms) arrived; added to ready queue ", 0,
-//                         processes[i].name, processes[i].estimates[processes[i].index]);
-//                 printReady();
-//             } else {
-//                 arriveQueue.add(processes[i]);
-//             }
-//         }
+            while (actionList.size() > 0 && actionList.get(0).kTime == clock) {
+                Process proc = actionList.remove(0);
+                switch (proc.state) {
+                    case NEW:
+                        proc.state = States.READY;
+                        readyList.add(proc);
+                        readyList.sort(new _sortByTau());
+                        fs.printArrival(clock, proc, readyList);
+                        break;
 
-//         Process proc = Process.EMPTY;
-//         int time = 0;
-//         int endNum = 0;
-//         int processNum = processes.length;
-//         LinkedList<Process> temp = new LinkedList<Process>();
+                    case READY:
+                        // perpear for load into CPU, load state
+                        proc.state = States.LOAD;
+                        proc.kTime += t_cs >> 1;
+                        actionList.add(proc);
+                        btProc = proc;
+                        break;
 
-//         while (proc != Process.EMPTY || endNum != processNum) {
-//             time++;
-//             temp.clear();
+                    case LOAD:
+                        // loaded into CPU complete, next state is burst
+                        proc.state = States.BURST;
+                        proc.kTime += proc.remain;
+                        // proc.csCount += 1; // context switch
+                        fs.printStartedBurst(clock, proc, readyList);
+                        actionList.add(proc);
+                        break;
 
-//             // Ticking processes in ioList
-//             for (Process p : ioList) {
-//                 if (p.tick()) {
-//                     temp.add(p);
-//                 }
-//             }
+                    case BURST:
+                        // burst complete, into unload state
+                        proc.state = States.UNLOAD;
+                        proc.kTime += t_cs >> 1;
+                        if (proc.burstTimes.length - proc.progress == 1) {
+                            // process terminated, but unload from CPU first
+                            fs.printTerminate(clock, proc, readyList);
+                        } else {
+                            fs.printEndedBurst(clock, proc, readyList);
+                            proc.tau = (int) Math.ceil(alpha * proc.burstTimes[proc.progress] + (1 - alpha) * proc.tau);
+                            fs.printReTau(clock, proc, readyList);
+                            proc.kTime += proc.blockTimes[proc.progress]; // just for print
+                            fs.printStartedBlock(clock, proc, readyList);
+                            proc.kTime -= proc.blockTimes[proc.progress];
+                        }
+                        actionList.add(proc);
+                        break;
 
-//             // Ticking processes in arriveQueue
-//             int arriveNum = 0;
-//             for (Process p : arriveQueue) {
-//                 if (p.tick()) {
-//                     arriveNum++;
-//                 }
-//             }
+                    case UNLOAD:
+                        // unloaded from CPU
+                        if (proc.burstTimes.length - proc.progress == 1) {
+                            // no more burst to go, process terminate
+                            proc.state = States.TERMINATED;
+                            endedList.add(proc);
+                        } else {
+                            proc.state = States.BLOCK;
+                            proc.kTime += proc.blockTimes[proc.progress];
+                            actionList.add(proc);
+                        }
+                        proc.csCount += 1; // context switch
+                        btProc = null;
+                        break;
 
-//             // Ticking processes in running
-//             if (proc != Process.EMPTY) {
-//                 if (proc.tick()) {
+                    case BLOCK:
+                        // block complete, no preemption in FCFS
+                        proc.state = States.READY;
+                        proc.progress += 1;
+                        proc.remain = proc.burstTimes[proc.progress];
+                        readyList.add(proc);
+                        readyList.sort(new _sortByTau());
+                        fs.printEndedBlock(clock, proc, null, readyList);
+                        break;
 
-//                     if (proc.state == ProcessState.ENTER_CPU){
-//                         proc.setState(ProcessState.BURST);
-//                         System.out.printf("time %dms: Process %s (tau %dms) started using the CPU for %dms burst ",
-//                                 time, proc.name, proc.estimates[proc.index], proc.remainingTime);
-//                         printReady();
-//                     }else if(proc.state == ProcessState.BURST){
-//                         proc.setState(ProcessState.LEAVE_CPU);
-//                         if (proc.index == proc.capacity - 1) {
-//                             System.out.printf("time %dms: Process %s terminated ", time, proc.name);
-//                             printReady();
-//                         } else {
-//                             if (proc.capacity - proc.index == 2) {
-//                                 System.out.printf(
-//                                         "time %dms: Process %s (tau %dms) completed a CPU burst; 1 burst to go ", time,
-//                                         proc.name, proc.estimates[proc.index]);
-//                                 printReady();
-//                             } else {
-//                                 System.out.printf(
-//                                         "time %dms: Process %s (tau %dms) completed a CPU burst; %d bursts to go ",
-//                                         time, proc.name, proc.estimates[proc.index], proc.capacity - proc.index - 1);
-//                                 printReady();
-//                             }
+                    default:
+                        System.err.println("Error: unexpected state.");
+                        System.exit(-1);
+                }
 
-//                             System.out.printf("time %dms: Recalculated tau = %dms for process %s ", time,
-//                                     proc.estimates[proc.index + 1], proc.name);
-//                             printReady();
-//                             System.out.printf(
-//                                     "time %dms: Process %s switching out of CPU; will block on I/O until time %dms ",
-//                                     time, proc.name, time + Project.t_cs / 2 + proc.getIOTime());
-//                             printReady();
-//                         }
-//                     }else if(proc.state == ProcessState.LEAVE_CPU){
-//                         if (proc.index == proc.capacity - 1) {
-//                             endNum++;
-//                             proc.leaveCPU = time;
-//                             proc.setState(ProcessState.TERMINATED);
-//                         } else {
-//                             proc.setState(ProcessState.BLOCK);
-//                             ioList.add(proc);
-//                         }
+                // sort
+                actionList.sort(new _sortByState());
+            }
 
-//                         proc = Process.EMPTY;
-//                     }else{
-//                         System.err.println("Error: unexpected state.");
-//                         System.exit(-1);
-//                     }
-//                 }
-//             } else {
-//                 if (!readyQueue.isEmpty()) {
-//                     proc = readyQueue.poll();
-//                     proc.setState(ProcessState.ENTER_CPU);
-//                     if (proc.tick()) {
-//                         proc.setState(ProcessState.BURST);
-//                         System.out.printf("time %dms: Process %s (tau %dms) started using the CPU for %dms burst ",
-//                                 time, proc.name, proc.estimates[proc.index], proc.remainingTime);
-//                         printReady();
-//                     }
-//                 }
-//             }
+            // empty CPU, add new process
+            if (btProc == null && readyList.size() > 0) {
+                Process tmp = readyList.remove(0);
+                tmp.kTime = clock;
+                actionList.add(tmp);
+                actionList.sort(new _sortByState());
+            }
+        }
 
-//             for (Process p : readyQueue) {
-//                 p.addWaitingTime();
-//             }
-//             // Add from IO to READY
-//             if (!temp.isEmpty()) {
-//                 temp.sort(new Comparator<Object>() {
-//                     @Override
-//                     public int compare(Object arg0, Object arg1) {
-//                         return ((Process) arg0).name.compareTo(((Process) arg1).name);
-//                     }
-//                 });
-//                 for (Process p : temp) {
-//                     p.index += 1;
-//                     ioList.remove(p);
-//                     readyQueue.add(p);
-//                     System.out.printf("time %dms: Process %s (tau %dms) completed I/O; added to ready queue ", time,
-//                             p.name, p.estimates[p.index]);
-//                     printReady();
-//                 }
-//             }
-//             for (int i = 0; i < arriveNum; i++) {
-//                 Process p = arriveQueue.remove();
-//                 readyQueue.add(p);
-//                 System.out.printf("time %dms: Process %s (tau %dms) arrived; added to ready queue ", time, p.name,
-//                         p.estimates[p.index]);
-//                 printReady();
-//             }
-//         }
+        System.out.printf("time %dms: Simulator ended for SJF ", clock);
+        fs.printReady(readyList);
 
-//         System.out.printf("time %dms: Simulator ended for SJF ", time);
-//         printReady();
-
-//         int burstNum = 0;
-//         for (Process p : processes) {
-//             burstNum += p.capacity;
-//         }
-//         int sum_cs = burstNum;
-
-//         double avg_bt = 0;
-//         for (Process p : processes) {
-//             avg_bt += p.sumBurst();
-//         }
-//         avg_bt = avg_bt / burstNum;
-
-//         double avg_wt = 0;
-//         for (Process p : processes) {
-//             avg_wt += p.getWaitingTime();
-//         }
-//         avg_wt /= burstNum;
-
-//         double avg_tt = 0;
-//         for (Process p : processes) {
-//             avg_tt += p.leaveCPU - p.arriveTime - p.getTotalIOTime();
-//         }
-//         avg_tt /= burstNum;
-
-//         result += String.format(
-//                 "-- average CPU burst time: %.3f ms\n" + "-- average wait time: %.3f ms\n"
-//                         + "-- average turnaround time: %.3f ms\n" + "-- total number of context switches: %d\n"
-//                         + "-- total number of preemptions: 0\n",
-//                 avg_bt, avg_wt, avg_tt, sum_cs);
-//         double retVal[] = new double[] { avg_bt, avg_wt, avg_tt, sum_cs, 0.0 };
-//         return retVal;
-//     }
-
-//     private void printReady() {
-//         if (this.readyQueue.isEmpty()) {
-//             System.out.println("[Q <empty>]");
-//             return;
-//         }
-
-//         String str = "[Q";
-
-//         List<Process> tmpList = new LinkedList<>();
-//         while (readyQueue.peek() != null) {
-//             Process p = readyQueue.poll();
-//             str += " " + p.name;
-//             tmpList.add(p);
-//         }
-
-//         readyQueue.addAll(tmpList);
-//         System.out.println(str + "]");
-//     }
-
-
-// }
+        double retVal[] = new double[5];
+        // calRetVal(retVal);
+        // System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
+        return retVal;
+    }
+}

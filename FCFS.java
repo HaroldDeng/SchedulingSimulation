@@ -137,8 +137,8 @@ public class FCFS extends ScheAlgo{
         fs.printReady(readyList);
 
         double retVal[] = new double[5];
-        calRetVal(retVal);
-        System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
+        // calRetVal(retVal);
+        // System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
         return retVal;
     }
 }

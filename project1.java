@@ -68,9 +68,9 @@ public class project1 {
         double fcfsRet[] = fcfs.simulate();
         System.out.println();
 
-        // SJF sjf = new SJF();
-        // double sjfRet[] = sjf.simulate();
-        // System.out.println();
+        SJF sjf = new SJF(procs, t_cs, alpha);
+        double sjfRet[] = sjf.simulate();
+        System.out.println();
 
         // SRT srt = new SRT();
         // double srtRet[] = srt.simulate();
@@ -153,6 +153,7 @@ public class project1 {
             p.kTime = p.arriveTime;
             p.remain = p.burstTimes[0];
             p.state = States.NEW;
+            p.tau = (int)(1 / lambda);
             procsList.add(p);
         }
     }
