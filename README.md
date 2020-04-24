@@ -1,7 +1,7 @@
 # SchedulingSimulation
 CPU scheduling simulation for spring 2020 CSCI-4210
 # Dependencies
-- Python3.6
+- JavaSE 8
 
 # Git command
 - download file from repository
