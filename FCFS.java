@@ -45,7 +45,12 @@ public class FCFS extends ScheAlgo{
                 switch (proc.state) {
                     case NEW:
                         proc.state = States.READY;
-                        readyList.add(proc);
+                        if (add_end){
+                            readyList.add(readyList.size(), proc);
+                        }else{
+                            readyList.add(proc);
+                        }
+                        
                         fs.printArrival(clock, proc, readyList);
                         break;
 
@@ -102,7 +107,11 @@ public class FCFS extends ScheAlgo{
                         proc.state = States.READY;
                         proc.progress += 1;
                         proc.remain = proc.burstTimes[proc.progress];
-                        readyList.add(proc);
+                        if (add_end){
+                            readyList.add(readyList.size(), proc);
+                        }else{
+                            readyList.add(proc);
+                        }
                         fs.printEndedBlock(clock, proc, null, readyList);
                         break;
 
@@ -132,5 +141,4 @@ public class FCFS extends ScheAlgo{
         System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
         return retVal;
     }
-
 }

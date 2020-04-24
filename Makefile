@@ -17,3 +17,8 @@ test5:
 	> out.txt
 	javac project1.java util.java FCFS.java RR.java SJF.java SRT.java
 	java project1 64 0.001 4096 8 4 0.5 2048 > out.txt
+
+test6:
+	> out.txt
+	javac project1.java util.java FCFS.java RR.java SJF.java SRT.java
+	java project1 64 0.001 4096 8 4 0.5 2048 BEGINNING > out.txt
