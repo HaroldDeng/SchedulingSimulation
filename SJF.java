@@ -13,11 +13,11 @@ import java.util.Iterator;
  * A class that represents the First Come First Serve CPU scheduling algorithm
  */
 public class SJF extends CPUSchedual {
-    public SJF(List<Process> procs, int t_cs, double alpha) {
+    public SJF(List<Process> procs, int t_cs, double alpha, int limit) {
         readyList = new ArrayList<Process>(procs.size());
         actionList = new ArrayList<Process>(procs.size());
         endedList = new ArrayList<Process>(procs.size());
-        fs = new FormatedStdout("SJF", Integer.MAX_VALUE);
+        fs = new FormatedStdout("SJF", limit);
         this.t_cs = t_cs;
         this.alpha = alpha;
         clock = 0;

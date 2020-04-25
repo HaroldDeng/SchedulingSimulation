@@ -6,11 +6,11 @@ import java.util.Iterator;
  * A class that represents the First Come First Serve CPU scheduling algorithm
  */
 public class FCFS extends CPUSchedual {
-    public FCFS(List<Process> procs, int t_cs) {
+    public FCFS(List<Process> procs, int t_cs, int limit) {
         readyList = new ArrayList<Process>(procs.size());
         actionList = new ArrayList<Process>(procs.size());
         endedList = new ArrayList<Process>(procs.size());
-        fs = new FormatedStdout("FCFS", Integer.MAX_VALUE);
+        fs = new FormatedStdout("FCFS", limit);
         this.t_cs = t_cs;
         clock = 0;
 

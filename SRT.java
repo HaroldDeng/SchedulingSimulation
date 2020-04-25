@@ -6,11 +6,11 @@ import java.util.Iterator;
  * A class that represents the First Come First Serve CPU scheduling algorithm
  */
 public class SRT extends CPUSchedual {
-    public SRT(List<Process> procs, int t_cs, double alpha) {
+    public SRT(List<Process> procs, int t_cs, double alpha, int limit) {
         readyList = new ArrayList<Process>(procs.size());
         actionList = new ArrayList<Process>(procs.size());
         endedList = new ArrayList<Process>(procs.size());
-        fs = new FormatedStdout("SRT", Integer.MAX_VALUE);
+        fs = new FormatedStdout("SRT", limit);
         this.t_cs = t_cs;
         this.alpha = alpha;
         clock = 0;
@@ -40,7 +40,7 @@ public class SRT extends CPUSchedual {
             // get time from next process
             clock = actionList.get(0).kTime;
 
-            if (clock == 8959) {
+            if (clock == 405) {
                 int X = 0;
             }
 
@@ -161,9 +161,7 @@ public class SRT extends CPUSchedual {
                     if (estLeft > tmp.tau) {
                         btProc.state = States.UNLOAD;
                         btProc.kTime = clock + (t_cs >> 1);
-                        System.out.printf("time %dms: Process %c (tau %dms) will preempt %c ", clock, tmp.name, tmp.tau,
-                                btProc.name);
-                        fs.printReady(readyList);
+                        fs.printCutPree(clock, tmp, btProc, readyList);
                         actionList.sort(new _sortByState());
                     }
                 }

@@ -9,11 +9,11 @@ public class RR extends CPUSchedual {
     private boolean add_end;
     private int t_slice;
 
-    public RR(List<Process> procs, int t_cs, int t_slice, boolean add_end) {
+    public RR(List<Process> procs, int t_cs, int t_slice, boolean add_end, int limit) {
         readyList = new ArrayList<Process>(procs.size());
         actionList = new ArrayList<Process>(procs.size());
         endedList = new ArrayList<Process>(procs.size());
-        fs = new FormatedStdout("RR", Integer.MAX_VALUE);
+        fs = new FormatedStdout("RR", limit);
         this.t_cs = t_cs;
         this.t_slice = t_slice;
         this.add_end = add_end;
@@ -83,19 +83,13 @@ public class RR extends CPUSchedual {
                         if (proc.remain > 0 && readyList.size() == 0) {
                             // no process in ready state, keep going
                             proc.kTime += Math.min(t_slice, proc.remain);
-                            System.out.printf(
-                                    "time %dms: Time slice expired; no preemption because ready queue is empty ",
-                                    clock);
-                            fs.printReady(readyList);
+                            fs.printSlcExp(clock, proc, readyList);
                         } else {
                             proc.state = States.UNLOAD;
                             proc.kTime += t_cs >> 1;
                             if (proc.remain > 0) {
                                 // time slice expires
-                                System.out.printf(
-                                        "time %dms: Time slice expired; process %c preempted with %dms to go ", clock,
-                                        proc.name, proc.remain);
-                                fs.printReady(readyList);
+                                fs.printSlcExp(clock, proc, readyList);
                             } else if (proc.burstTimes.length - proc.progress == 1) {
                                 // process terminated, but unload from CPU first
                                 fs.printTerminate(clock, proc, readyList);

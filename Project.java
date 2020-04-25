@@ -8,7 +8,7 @@
         
     Author
         Zhihao Deng (dengz5@rpi.edu)
-        <YOUR NAME>
+        Letian Zhou (zhoul10@rpi.edu)
 
     Last modifly
         Apr.20 2020
@@ -17,10 +17,9 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.math.*;
 import java.io.*;
 
-public class project1 {
+public class Project {
     public static long seed; // pseudo-random generator's seed
     public static double lambda; // it uses in exponential distribution
     public static int bound; // upper bound for valid pseudo-random numbers
@@ -31,6 +30,7 @@ public class project1 {
     // define whether processes are added to the end or the beginning of the ready
     // queue
     public static boolean add_end;
+    public final static int LIMIT = 1000;
 
     public static void main(String[] args) {
 
@@ -64,19 +64,19 @@ public class project1 {
         initProcs(procs);
 
         // run algorithms
-        FCFS fcfs = new FCFS(procs, t_cs);
+        FCFS fcfs = new FCFS(procs, t_cs, LIMIT);
         double fcfsRet[] = fcfs.simulate();
         System.out.println();
 
-        SJF sjf = new SJF(procs, t_cs, alpha);
+        SJF sjf = new SJF(procs, t_cs, alpha, LIMIT);
         double sjfRet[] = sjf.simulate();
         System.out.println();
 
-        SRT srt = new SRT(procs, t_cs, alpha);
+        SRT srt = new SRT(procs, t_cs, alpha, LIMIT);
         double srtRet[] = srt.simulate();
         System.out.println();
 
-        RR rr = new RR(procs, t_cs, t_slice, add_end);
+        RR rr = new RR(procs, t_cs, t_slice, add_end, LIMIT);
         double rrRet[] = rr.simulate();
 
         // output to file
@@ -90,26 +90,26 @@ public class project1 {
             writer.write(String.format("-- total number of context switches: %d\n", (int) fcfsRet[3]));
             writer.write(String.format("-- total number of preemptions: %d\n", (int) fcfsRet[4]));
 
-            // writer.write("Algorithm SJF\n");
-            // writer.write(String.format("-- average CPU burst time: %.3f ms\n", sjfRet[0]));
-            // writer.write(String.format("-- average wait time: %.3f ms\n", sjfRet[1]));
-            // writer.write(String.format("-- average turnaround time: %.3f ms\n", sjfRet[2]));
-            // writer.write(String.format("-- total number of context switches: %d\n", (int) sjfRet[3]));
-            // writer.write(String.format("-- total number of preemptions: %d\n", (int) sjfRet[4]));
+            writer.write("Algorithm SJF\n");
+            writer.write(String.format("-- average CPU burst time: %.3f ms\n", sjfRet[0]));
+            writer.write(String.format("-- average wait time: %.3f ms\n", sjfRet[1]));
+            writer.write(String.format("-- average turnaround time: %.3f ms\n", sjfRet[2]));
+            writer.write(String.format("-- total number of context switches: %d\n", (int) sjfRet[3]));
+            writer.write(String.format("-- total number of preemptions: %d\n", (int) sjfRet[4]));
 
-            // writer.write("Algorithm SRT\n");
-            // writer.write(String.format("-- average CPU burst time: %.3f ms\n", srtRet[0]));
-            // writer.write(String.format("-- average wait time: %.3f ms\n", srtRet[1]));
-            // writer.write(String.format("-- average turnaround time: %.3f ms\n", srtRet[2]));
-            // writer.write(String.format("-- total number of context switches: %d\n", (int) srtRet[3]));
-            // writer.write(String.format("-- total number of preemptions: %d\n", (int) srtRet[4]));
+            writer.write("Algorithm SRT\n");
+            writer.write(String.format("-- average CPU burst time: %.3f ms\n", srtRet[0]));
+            writer.write(String.format("-- average wait time: %.3f ms\n", srtRet[1]));
+            writer.write(String.format("-- average turnaround time: %.3f ms\n", srtRet[2]));
+            writer.write(String.format("-- total number of context switches: %d\n", (int) srtRet[3]));
+            writer.write(String.format("-- total number of preemptions: %d\n", (int) srtRet[4]));
 
-            // writer.write("Algorithm RR\n");
-            // writer.write(String.format("-- average CPU burst time: %.3f ms\n", rrRet[0]));
-            // writer.write(String.format("-- average wait time: %.3f ms\n", rrRet[1]));
-            // writer.write(String.format("-- average turnaround time: %.3f ms\n", rrRet[2]));
-            // writer.write(String.format("-- total number of context switches: %d\n", (int) rrRet[3]));
-            // writer.write(String.format("-- total number of preemptions: %d\n", (int) rrRet[4]));
+            writer.write("Algorithm RR\n");
+            writer.write(String.format("-- average CPU burst time: %.3f ms\n", rrRet[0]));
+            writer.write(String.format("-- average wait time: %.3f ms\n", rrRet[1]));
+            writer.write(String.format("-- average turnaround time: %.3f ms\n", rrRet[2]));
+            writer.write(String.format("-- total number of context switches: %d\n", (int) rrRet[3]));
+            writer.write(String.format("-- total number of preemptions: %d\n", (int) rrRet[4]));
             writer.close();
 
         } catch (IOException e) {
@@ -153,7 +153,7 @@ public class project1 {
             p.kTime = p.arriveTime;
             p.remain = p.burstTimes[0];
             p.state = States.NEW;
-            p.tau = (int)(1 / lambda);
+            p.tau = (int) (1 / lambda);
             procsList.add(p);
         }
     }

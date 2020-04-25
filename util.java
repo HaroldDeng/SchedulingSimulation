@@ -148,6 +148,31 @@ class FormatedStdout {
         printReady(readyList);
     }
 
+    // !!! emergency fix
+    // for SRT only
+    public void printCutPree(int clock, Process proc, Process proc2, List<Process> readyList) {
+        if (clock > limit) {
+            return;
+        }
+        System.out.printf("time %dms: Process %c (tau %dms) will preempt %c ", clock, proc.name, proc.tau, proc2.name);
+        printReady(readyList);
+    }
+
+    // !!! emergency fix
+    // for RR only
+    public void printSlcExp(int clock, Process proc, List<Process> readyList) {
+        if (clock > limit) {
+            return;
+        } else if (readyList.size() > 0) {
+            System.out.printf("time %dms: Time slice expired; process %c preempted with %dms to go ", clock, proc.name,
+                    proc.remain);
+        } else {
+            System.out.printf("time %dms: Time slice expired; no preemption because ready queue is empty ", clock);
+        }
+
+        printReady(readyList);
+    }
+
     public void printStartedBlock(int clock, Process proc, List<Process> readyList) {
         if (clock > limit) {
             return;
