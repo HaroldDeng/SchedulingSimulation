@@ -72,9 +72,9 @@ public class project1 {
         double sjfRet[] = sjf.simulate();
         System.out.println();
 
-        // SRT srt = new SRT();
-        // double srtRet[] = srt.simulate();
-        // System.out.println();
+        SRT srt = new SRT(procs, t_cs, alpha);
+        double srtRet[] = srt.simulate();
+        System.out.println();
 
         // RR rr = new RR();
         // double rrRet[] = rr.simulate();

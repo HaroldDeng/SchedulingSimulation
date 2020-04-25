@@ -104,10 +104,13 @@ class FormatedStdout {
             return;
         } else if (mode.matches("FCFS|RR")) {
             System.out.printf("time %dms: Process %c started using the CPU for %dms burst ", clock, proc.name,
-                    proc.burstTimes[proc.progress]);
+                    proc.remain);
+        } else if (mode.matches("SRT")) {
+            System.out.printf("time %dms: Process %c (tau %dms) started using the CPU with %dms burst remaining ",
+                    clock, proc.name, proc.tau, proc.remain);
         } else {
             System.out.printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst ", clock,
-                    proc.name, proc.tau, proc.burstTimes[proc.progress]);
+                    proc.name, proc.tau, proc.remain);
         }
         printReady(readyList);
     }
@@ -193,11 +196,16 @@ class _sortByArrival implements Comparator<Process> {
     }
 }
 
-class _sortByTau implements Comparator<Process> {
+class _sortByEstmate implements Comparator<Process> {
     @Override
     public int compare(Process p1, Process p2) {
-        if (p1.tau != p2.tau) {
-            return p1.tau - p2.tau;
+        // if ((p1.name == 'A' || p1.name == 'H') && (p2.name == 'A' || p2.name == 'H')) {
+        //     int X = 0;
+        // }
+        int est1 = p1.tau - p1.burstTimes[p1.progress] + p1.remain;
+        int est2 = p2.tau - p2.burstTimes[p2.progress] + p2.remain;
+        if (est1 != est2) {
+            return est1 - est2;
         }
         return p1.name - p2.name;
     }

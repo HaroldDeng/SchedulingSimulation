@@ -5,7 +5,7 @@ import java.util.Iterator;
 /**
  * A class that represents the First Come First Serve CPU scheduling algorithm
  */
-public class FCFS extends ScheAlgo{
+public class FCFS extends CPUSchedual{
     public FCFS(List<Process> procs, int t_cs, boolean add_end) {
         readyList = new ArrayList<Process>(procs.size());
         actionList = new ArrayList<Process>(procs.size());

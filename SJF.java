@@ -12,7 +12,7 @@ import java.util.Iterator;
 /**
  * A class that represents the First Come First Serve CPU scheduling algorithm
  */
-public class SJF extends ScheAlgo {
+public class SJF extends CPUSchedual {
     public SJF(List<Process> procs, int t_cs, double alpha) {
         readyList = new ArrayList<Process>(procs.size());
         actionList = new ArrayList<Process>(procs.size());
@@ -53,7 +53,7 @@ public class SJF extends ScheAlgo {
                     case NEW:
                         proc.state = States.READY;
                         readyList.add(proc);
-                        readyList.sort(new _sortByTau());
+                        readyList.sort(new _sortByEstmate());
                         fs.printArrival(clock, proc, readyList);
                         break;
 
@@ -113,7 +113,7 @@ public class SJF extends ScheAlgo {
                         proc.progress += 1;
                         proc.remain = proc.burstTimes[proc.progress];
                         readyList.add(proc);
-                        readyList.sort(new _sortByTau());
+                        readyList.sort(new _sortByEstmate());
                         fs.printEndedBlock(clock, proc, null, readyList);
                         break;
 

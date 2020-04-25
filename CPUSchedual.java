@@ -1,6 +1,6 @@
 import java.util.List;
 
-public class ScheAlgo {
+public class CPUSchedual {
     List<Process> readyList; // processes in ready state
     List<Process> actionList; // CPU busrting or I/O blocking
     List<Process> endedList; // processes that is terminated
