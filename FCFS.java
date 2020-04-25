@@ -5,14 +5,13 @@ import java.util.Iterator;
 /**
  * A class that represents the First Come First Serve CPU scheduling algorithm
  */
-public class FCFS extends CPUSchedual{
-    public FCFS(List<Process> procs, int t_cs, boolean add_end) {
+public class FCFS extends CPUSchedual {
+    public FCFS(List<Process> procs, int t_cs) {
         readyList = new ArrayList<Process>(procs.size());
         actionList = new ArrayList<Process>(procs.size());
         endedList = new ArrayList<Process>(procs.size());
         fs = new FormatedStdout("FCFS", Integer.MAX_VALUE);
         this.t_cs = t_cs;
-        this.add_end = add_end;
         clock = 0;
 
         // deep copy
@@ -36,7 +35,7 @@ public class FCFS extends CPUSchedual{
         // store process that is in load state
         Process btProc = null; // process with LOAD or BURST or UNLOAD state
         while (actionList.size() != 0) {
-            
+
             // get time from next process
             clock = actionList.get(0).kTime;
 
@@ -45,12 +44,8 @@ public class FCFS extends CPUSchedual{
                 switch (proc.state) {
                     case NEW:
                         proc.state = States.READY;
-                        if (add_end){
-                            readyList.add(readyList.size(), proc);
-                        }else{
-                            readyList.add(proc);
-                        }
-                        
+                        readyList.add(proc);
+
                         fs.printArrival(clock, proc, readyList);
                         break;
 
@@ -107,11 +102,7 @@ public class FCFS extends CPUSchedual{
                         proc.state = States.READY;
                         proc.progress += 1;
                         proc.remain = proc.burstTimes[proc.progress];
-                        if (add_end){
-                            readyList.add(readyList.size(), proc);
-                        }else{
-                            readyList.add(proc);
-                        }
+                        readyList.add(proc);
                         fs.printEndedBlock(clock, proc, null, readyList);
                         break;
 
@@ -138,7 +129,8 @@ public class FCFS extends CPUSchedual{
 
         double retVal[] = new double[5];
         // calRetVal(retVal);
-        // System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
+        // System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1],
+        // retVal[2], retVal[3], retVal[4]);
         return retVal;
     }
 }

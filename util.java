@@ -102,15 +102,23 @@ class FormatedStdout {
     public void printStartedBurst(int clock, Process proc, List<Process> readyList) {
         if (clock > limit) {
             return;
-        } else if (mode.matches("FCFS|RR")) {
+        } else if (mode.compareTo("FCFS") == 0) {
             System.out.printf("time %dms: Process %c started using the CPU for %dms burst ", clock, proc.name,
                     proc.remain);
-        } else if (mode.matches("SRT")) {
-            System.out.printf("time %dms: Process %c (tau %dms) started using the CPU with %dms burst remaining ",
-                    clock, proc.name, proc.tau, proc.remain);
         } else {
-            System.out.printf("time %dms: Process %c (tau %dms) started using the CPU for %dms burst ", clock,
-                    proc.name, proc.tau, proc.remain);
+            // proc.remain != proc.burstTimes[proc.progress]
+            System.out.printf("time %dms: Process %c ", clock, proc.name);
+            if (mode.matches("SRT|SJF")) {
+                // started using the CPU with %dms burst remaining
+                System.out.printf("(tau %dms) ", proc.tau);
+            }
+
+            if (mode.compareTo("SRT") == 0
+                    || (mode.compareTo("RR") == 0 && proc.remain != proc.burstTimes[proc.progress])) {
+                System.out.printf("started using the CPU with %dms burst remaining ", proc.remain);
+            } else {
+                System.out.printf("started using the CPU for %dms burst ", proc.remain);
+            }
         }
         printReady(readyList);
     }
@@ -186,22 +194,9 @@ class FormatedStdout {
     }
 }
 
-class _sortByArrival implements Comparator<Process> {
-    @Override
-    public int compare(Process p1, Process p2) {
-        if (p1.kTime != p2.kTime) {
-            return p1.kTime - p2.kTime;
-        }
-        return p1.name - p2.name;
-    }
-}
-
 class _sortByEstmate implements Comparator<Process> {
     @Override
     public int compare(Process p1, Process p2) {
-        // if ((p1.name == 'A' || p1.name == 'H') && (p2.name == 'A' || p2.name == 'H')) {
-        //     int X = 0;
-        // }
         int est1 = p1.tau - p1.burstTimes[p1.progress] + p1.remain;
         int est2 = p2.tau - p2.burstTimes[p2.progress] + p2.remain;
         if (est1 != est2) {

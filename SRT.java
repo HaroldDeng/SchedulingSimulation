@@ -91,23 +91,22 @@ public class SRT extends CPUSchedual {
                         break;
 
                     case UNLOAD:
-                        if (proc.remain == 0) {
-                            // unloaded from CPU
-                            if (proc.burstTimes.length - proc.progress == 1) {
-                                // no more burst to go, process terminate
-                                proc.state = States.TERMINATED;
-                                endedList.add(proc);
-                            } else {
-                                // more bursts to go, and not being preempted
-                                proc.state = States.BLOCK;
-                                proc.kTime += proc.blockTimes[proc.progress];
-                                actionList.add(proc);
-                            }
-                        } else {
+                        // unload from CPU
+                        if (proc.remain > 0) {
                             // being preempted
                             proc.state = States.READY;
                             readyList.add(proc);
                             readyList.sort(new _sortByEstmate());
+                        } else if (proc.burstTimes.length - proc.progress == 1) {
+                            // no more burst to go, process terminate
+                            proc.state = States.TERMINATED;
+                            endedList.add(proc);
+                        } else {
+                            // more bursts to go, and not being preempted
+                            proc.state = States.BLOCK;
+                            proc.kTime += proc.blockTimes[proc.progress];
+                            actionList.add(proc);
+
                         }
                         proc.csCount += 1; // context switch
                         btProc = null;

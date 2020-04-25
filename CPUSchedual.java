@@ -7,7 +7,6 @@ public class CPUSchedual {
     FormatedStdout fs;
     int t_cs;
     double alpha;
-    boolean add_end;
     int clock;
 
     double[] simulate() {

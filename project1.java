@@ -64,7 +64,7 @@ public class project1 {
         initProcs(procs);
 
         // run algorithms
-        FCFS fcfs = new FCFS(procs, t_cs, add_end);
+        FCFS fcfs = new FCFS(procs, t_cs);
         double fcfsRet[] = fcfs.simulate();
         System.out.println();
 
@@ -76,8 +76,8 @@ public class project1 {
         double srtRet[] = srt.simulate();
         System.out.println();
 
-        // RR rr = new RR();
-        // double rrRet[] = rr.simulate();
+        RR rr = new RR(procs, t_cs, t_slice, add_end);
+        double rrRet[] = rr.simulate();
 
         // output to file
         try {
