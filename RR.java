@@ -32,7 +32,7 @@ public class RR extends CPUSchedual {
     }
 
     @Override
-    public double[] simulate() {
+    public float[] simulate() {
         // print all processes
         fs.printAll(actionList);
         System.out.println("time 0ms: Simulator started for RR [Q <empty>]");
@@ -43,9 +43,9 @@ public class RR extends CPUSchedual {
 
             // get time from next process
             clock = actionList.get(0).kTime;
-            if (clock == 467) {
-                int X = 0;
-            }
+            // if (clock == 467) {
+            //     int X = 0;
+            // }
 
             while (actionList.size() > 0 && actionList.get(0).kTime == clock) {
                 Process proc = actionList.remove(0);
@@ -55,7 +55,7 @@ public class RR extends CPUSchedual {
                         if (add_end) {
                             readyList.add(readyList.size(), proc);
                         } else {
-                            readyList.add(proc);
+                            readyList.add(0, proc);
                         }
 
                         fs.printArrival(clock, proc, readyList);
@@ -108,10 +108,11 @@ public class RR extends CPUSchedual {
                         // unloaded from CPU
                         if (proc.remain > 0) {
                             proc.state = States.READY;
+                            proc.pmCount += 1;
                             if (add_end) {
                                 readyList.add(readyList.size(), proc);
                             } else {
-                                readyList.add(proc);
+                                readyList.add(0, proc);
                             }
                         } else if (proc.burstTimes.length - proc.progress == 1) {
                             // no more burst to go, process terminate
@@ -134,7 +135,7 @@ public class RR extends CPUSchedual {
                         if (add_end) {
                             readyList.add(readyList.size(), proc);
                         } else {
-                            readyList.add(proc);
+                            readyList.add(0, proc);
                         }
                         fs.printEndedBlock(clock, proc, null, readyList);
                         break;
@@ -160,10 +161,9 @@ public class RR extends CPUSchedual {
         System.out.printf("time %dms: Simulator ended for RR ", clock);
         fs.printReady(readyList);
 
-        double retVal[] = new double[5];
-        // calRetVal(retVal);
-        // System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1],
-        // retVal[2], retVal[3], retVal[4]);
+        float retVal[] = new float[5];
+        calRetVal(retVal);
+        // System.err.printf("%.3f %.3f %.3f %.0f %.0f\n", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
         return retVal;
     }
 }

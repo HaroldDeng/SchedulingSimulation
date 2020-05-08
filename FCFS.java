@@ -27,7 +27,7 @@ public class FCFS extends CPUSchedual {
     }
 
     @Override
-    public double[] simulate() {
+    public float[] simulate() {
         // print all processes
         fs.printAll(actionList);
         System.out.println("time 0ms: Simulator started for FCFS [Q <empty>]");
@@ -127,10 +127,9 @@ public class FCFS extends CPUSchedual {
         System.out.printf("time %dms: Simulator ended for FCFS ", clock);
         fs.printReady(readyList);
 
-        double retVal[] = new double[5];
-        // calRetVal(retVal);
-        // System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1],
-        // retVal[2], retVal[3], retVal[4]);
+        float retVal[] = new float[5];
+        calRetVal(retVal);
+        // System.err.printf("%.3f %.3f %.3f %.0f %.0f\n", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
         return retVal;
     }
 }

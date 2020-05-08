@@ -28,7 +28,7 @@ public class SRT extends CPUSchedual {
     }
 
     @Override
-    public double[] simulate() {
+    public float[] simulate() {
         // print all processes
         fs.printAll(actionList);
         System.out.println("time 0ms: Simulator started for SRT [Q <empty>]");
@@ -40,9 +40,9 @@ public class SRT extends CPUSchedual {
             // get time from next process
             clock = actionList.get(0).kTime;
 
-            if (clock == 405) {
-                int X = 0;
-            }
+            // if (clock == 405) {
+            //     int X = 0;
+            // }
 
             while (actionList.size() > 0 && actionList.get(0).kTime == clock) {
                 Process proc = actionList.remove(0);
@@ -95,6 +95,7 @@ public class SRT extends CPUSchedual {
                         if (proc.remain > 0) {
                             // being preempted
                             proc.state = States.READY;
+                            proc.pmCount += 1;
                             readyList.add(proc);
                             readyList.sort(new _sortByEstmate());
                         } else if (proc.burstTimes.length - proc.progress == 1) {
@@ -171,10 +172,9 @@ public class SRT extends CPUSchedual {
         System.out.printf("time %dms: Simulator ended for SRT ", clock);
         fs.printReady(readyList);
 
-        double retVal[] = new double[5];
-        // calRetVal(retVal);
-        // System.err.printf("%.3f %.3f %.3f %.0f %.0f", retVal[0], retVal[1],
-        // retVal[2], retVal[3], retVal[4]);
+        float retVal[] = new float[5];
+        calRetVal(retVal);
+        // System.err.printf("%.3f %.3f %.3f %.0f %.0f\n", retVal[0], retVal[1], retVal[2], retVal[3], retVal[4]);
         return retVal;
     }
 }

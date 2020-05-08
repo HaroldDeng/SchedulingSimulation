@@ -7,11 +7,11 @@
         in depth in this project.
         
     Author
-        Zhihao Deng (dengz5@rpi.edu)
         Letian Zhou (zhoul10@rpi.edu)
+        Zhihao Deng (dengz5@rpi.edu)
 
     Last modifly
-        Apr.20 2020
+        Apr.26 2020
 */
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class Project {
     // define whether processes are added to the end or the beginning of the ready
     // queue
     public static boolean add_end;
-    public final static int LIMIT = 1000;
+    public final static int LIMIT = 999;
 
     public static void main(String[] args) {
 
@@ -65,19 +65,19 @@ public class Project {
 
         // run algorithms
         FCFS fcfs = new FCFS(procs, t_cs, LIMIT);
-        double fcfsRet[] = fcfs.simulate();
+        float fcfsRet[] = fcfs.simulate();
         System.out.println();
 
         SJF sjf = new SJF(procs, t_cs, alpha, LIMIT);
-        double sjfRet[] = sjf.simulate();
+        float sjfRet[] = sjf.simulate();
         System.out.println();
 
         SRT srt = new SRT(procs, t_cs, alpha, LIMIT);
-        double srtRet[] = srt.simulate();
+        float srtRet[] = srt.simulate();
         System.out.println();
 
         RR rr = new RR(procs, t_cs, t_slice, add_end, LIMIT);
-        double rrRet[] = rr.simulate();
+        float rrRet[] = rr.simulate();
 
         // output to file
         try {
@@ -87,29 +87,29 @@ public class Project {
             writer.write(String.format("-- average CPU burst time: %.3f ms\n", fcfsRet[0]));
             writer.write(String.format("-- average wait time: %.3f ms\n", fcfsRet[1]));
             writer.write(String.format("-- average turnaround time: %.3f ms\n", fcfsRet[2]));
-            writer.write(String.format("-- total number of context switches: %d\n", (int) fcfsRet[3]));
-            writer.write(String.format("-- total number of preemptions: %d\n", (int) fcfsRet[4]));
+            writer.write(String.format("-- total number of context switches: %.0f\n", fcfsRet[3]));
+            writer.write(String.format("-- total number of preemptions: %.0f\n", fcfsRet[4]));
 
             writer.write("Algorithm SJF\n");
             writer.write(String.format("-- average CPU burst time: %.3f ms\n", sjfRet[0]));
             writer.write(String.format("-- average wait time: %.3f ms\n", sjfRet[1]));
             writer.write(String.format("-- average turnaround time: %.3f ms\n", sjfRet[2]));
-            writer.write(String.format("-- total number of context switches: %d\n", (int) sjfRet[3]));
-            writer.write(String.format("-- total number of preemptions: %d\n", (int) sjfRet[4]));
+            writer.write(String.format("-- total number of context switches: %.0f\n", sjfRet[3]));
+            writer.write(String.format("-- total number of preemptions: %.0f\n", sjfRet[4]));
 
             writer.write("Algorithm SRT\n");
             writer.write(String.format("-- average CPU burst time: %.3f ms\n", srtRet[0]));
             writer.write(String.format("-- average wait time: %.3f ms\n", srtRet[1]));
             writer.write(String.format("-- average turnaround time: %.3f ms\n", srtRet[2]));
-            writer.write(String.format("-- total number of context switches: %d\n", (int) srtRet[3]));
-            writer.write(String.format("-- total number of preemptions: %d\n", (int) srtRet[4]));
+            writer.write(String.format("-- total number of context switches: %.0f\n", srtRet[3]));
+            writer.write(String.format("-- total number of preemptions: %.0f\n", srtRet[4]));
 
             writer.write("Algorithm RR\n");
             writer.write(String.format("-- average CPU burst time: %.3f ms\n", rrRet[0]));
             writer.write(String.format("-- average wait time: %.3f ms\n", rrRet[1]));
             writer.write(String.format("-- average turnaround time: %.3f ms\n", rrRet[2]));
-            writer.write(String.format("-- total number of context switches: %d\n", (int) rrRet[3]));
-            writer.write(String.format("-- total number of preemptions: %d\n", (int) rrRet[4]));
+            writer.write(String.format("-- total number of context switches: %.0f\n", rrRet[3]));
+            writer.write(String.format("-- total number of preemptions: %.0f\n", rrRet[4]));
             writer.close();
 
         } catch (IOException e) {
@@ -124,7 +124,6 @@ public class Project {
             double retVal = Math.ceil(-Math.log(rng.drand48()) / lambda);
             while (retVal > bound) {
                 retVal = Math.ceil(-Math.log(rng.drand48()) / lambda);
-                ;
             }
             return retVal;
         };
@@ -145,10 +144,10 @@ public class Project {
 
             int j;
             for (j = 0; j < p.blockTimes.length; ++j) {
-                p.burstTimes[j] = (int) boundedRNG.apply(rng).doubleValue();
-                p.blockTimes[j] = (int) boundedRNG.apply(rng).doubleValue();
+                p.burstTimes[j] = ((int) boundedRNG.apply(rng).doubleValue());
+                p.blockTimes[j] = ((int) boundedRNG.apply(rng).doubleValue());
             }
-            p.burstTimes[j] = (int) boundedRNG.apply(rng).doubleValue();
+            p.burstTimes[j] = ((int) boundedRNG.apply(rng).doubleValue());
 
             p.kTime = p.arriveTime;
             p.remain = p.burstTimes[0];
